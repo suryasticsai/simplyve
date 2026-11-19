@@ -1,0 +1,72 @@
+// webgl.js
+document.addEventListener('DOMContentLoaded', () => {
+    const canvas = document.getElementById('webgl-canvas');
+    if (!canvas) return;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    const renderer = new THREE.WebGLRenderer({ canvas, alpha: true, antialias: true });
+    
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    // Particles
+    const particlesGeometry = new THREE.BufferGeometry();
+    const particlesCount = 700;
+    const posArray = new Float32Array(particlesCount * 3);
+
+    for(let i = 0; i < particlesCount * 3; i++) {
+        // Spread particles across a wide area
+        posArray[i] = (Math.random() - 0.5) * 15;
+    }
+
+    particlesGeometry.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
+
+    // Material (Deep Green/Teal glow)
+    const particlesMaterial = new THREE.PointsMaterial({
+        size: 0.02,
+        color: 0x10b981, // --primary
+        transparent: true,
+        opacity: 0.4,
+        blending: THREE.AdditiveBlending
+    });
+
+    const particlesMesh = new THREE.Points(particlesGeometry, particlesMaterial);
+    scene.add(particlesMesh);
+
+    // Mouse interaction
+    let mouseX = 0;
+    let mouseY = 0;
+
+    document.addEventListener('mousemove', (event) => {
+        mouseX = event.clientX / window.innerWidth - 0.5;
+        mouseY = event.clientY / window.innerHeight - 0.5;
+    });
+
+    // Animation Loop
+    const clock = new THREE.Clock();
+
+    function animate() {
+        requestAnimationFrame(animate);
+        const elapsedTime = clock.getElapsedTime();
+
+        // Slow rotation
+        particlesMesh.rotation.y = elapsedTime * 0.05;
+        particlesMesh.rotation.x = elapsedTime * 0.02;
+
+        // Gentle floating effect based on mouse
+        particlesMesh.position.x += (mouseX * 0.5 - particlesMesh.position.x) * 0.05;
+        particlesMesh.position.y += (-mouseY * 0.5 - particlesMesh.position.y) * 0.05;
+
+        renderer.render(scene, camera);
+    }
+
+    animate();
+
+    // Resize handler
+    window.addEventListener('resize', () => {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+});
