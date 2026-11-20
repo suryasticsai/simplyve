@@ -5,31 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Symplyve · Elite Leave Management</title>
     
-    <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
     
-    <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     
-    <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <!-- WebGL Background Canvas -->
     <canvas id="webgl-canvas"></canvas>
+
+    <!-- Mobile Sidebar Backdrop -->
+    <div class="sidebar-backdrop" :class="{ 'show': isMobileSidebarOpen }" @click="isMobileSidebarOpen = false"></div>
 
     <div id="app" class="app-container">
         
         <!-- ================= SIDEBAR ================= -->
-        <aside class="sidebar">
+        <aside class="sidebar" :class="{ 'mobile-open': isMobileSidebarOpen }">
             <div class="brand">
-                <div class="brand-icon">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                </div>
+                <!-- YOUR LOGO HERE -->
+                <img src="simplyve-logo.png" alt="Symplyve" class="brand-logo">
                 <div class="brand-text">
                     <h1>Symplyve</h1>
                     <p>Leave Management</p>
@@ -37,23 +34,23 @@
             </div>
 
             <div class="nav-scroll">
-                <a href="#" class="nav-item" @click.prevent="activeTab = 'welcome'" :class="{ active: activeTab === 'welcome' }">
+                <a href="#" class="nav-item" @click.prevent="activeTab = 'welcome'; isMobileSidebarOpen = false" :class="{ active: activeTab === 'welcome' }">
                     <div class="nav-left"><i class="bi bi-house"></i> Welcome</div>
                 </a>
-                <a href="#" class="nav-item" @click.prevent="activeTab = 'leave'" :class="{ active: activeTab === 'leave' }">
+                <a href="#" class="nav-item" @click.prevent="activeTab = 'leave'; isMobileSidebarOpen = false" :class="{ active: activeTab === 'leave' }">
                     <div class="nav-left"><i class="bi bi-clock"></i> My Leave</div>
                 </a>
-                <a href="#" class="nav-item" @click.prevent="activeTab = 'team'" :class="{ active: activeTab === 'team' }">
+                <a href="#" class="nav-item" @click.prevent="activeTab = 'team'; isMobileSidebarOpen = false" :class="{ active: activeTab === 'team' }">
                     <div class="nav-left"><i class="bi bi-people"></i> My Team</div>
                 </a>
-                <a href="#" class="nav-item" @click.prevent="activeTab = 'approvals'" :class="{ active: activeTab === 'approvals' }">
+                <a href="#" class="nav-item" @click.prevent="activeTab = 'approvals'; isMobileSidebarOpen = false" :class="{ active: activeTab === 'approvals' }">
                     <div class="nav-left"><i class="bi bi-check2-square"></i> Approvals</div>
                     <span class="badge bg-warning text-dark" v-if="pendingApprovalsCount > 0">{{ pendingApprovalsCount }}</span>
                 </a>
-                <a href="#" class="nav-item" @click.prevent="activeTab = 'calendar'" :class="{ active: activeTab === 'calendar' }">
+                <a href="#" class="nav-item" @click.prevent="activeTab = 'calendar'; isMobileSidebarOpen = false" :class="{ active: activeTab === 'calendar' }">
                     <div class="nav-left"><i class="bi bi-calendar3"></i> Calendar</div>
                 </a>
-                <a href="#" class="nav-item" @click.prevent="activeTab = 'reports'" :class="{ active: activeTab === 'reports' }">
+                <a href="#" class="nav-item" @click.prevent="activeTab = 'reports'; isMobileSidebarOpen = false" :class="{ active: activeTab === 'reports' }">
                     <div class="nav-left"><i class="bi bi-bar-chart"></i> Reports</div>
                 </a>
             </div>
@@ -72,11 +69,16 @@
             <!-- Topbar -->
             <header class="topbar">
                 <div class="controls-row">
-                    <div class="date-picker-group">
+                    <!-- Mobile Hamburger -->
+                    <button class="btn btn-light d-md-none me-2" @click="isMobileSidebarOpen = true">
+                        <i class="bi bi-list fs-5"></i>
+                    </button>
+
+                    <div class="date-picker-group d-none d-sm-flex">
                         <i class="bi bi-calendar-event"></i>
                         01 / 03 / 2026 <span class="mx-1 text-muted">→</span> 31 / 03 / 2026
                     </div>
-                    <div class="btn-group" role="group">
+                    <div class="btn-group d-none d-md-flex" role="group">
                         <button class="btn-zoom">2W</button>
                         <button class="btn-zoom">4W</button>
                         <button class="btn-zoom active">This Month</button>
@@ -84,21 +86,20 @@
                     </div>
                 </div>
                 
-                <div class="controls-row">
-                    <div class="filter-pills">
+                <div class="controls-row mt-2 mt-md-0">
+                    <div class="filter-pills d-none d-lg-flex">
                         <button class="pill active">Everyone</button>
                         <button class="pill">My Team</button>
                         <button class="pill">Me</button>
                     </div>
                     
-                    <div class="d-flex align-items-center gap-3 ms-auto">
-                        <!-- Manual Refresh Button -->
+                    <div class="d-flex align-items-center gap-2 gap-md-3 ms-auto">
                         <button class="btn btn-light bell-btn" @click="loadData" title="Refresh from Sheets" :disabled="isLoading">
                             <i class="bi bi-arrow-clockwise" :class="{ 'spin-anim': isLoading }"></i>
                         </button>
                         
                         <button class="btn btn-primary elite-btn" @click="openLeaveModal">
-                            <i class="bi bi-plus-lg me-1"></i> Apply Leave
+                            <i class="bi bi-plus-lg me-1"></i> <span class="d-none d-sm-inline">Apply Leave</span><span class="d-inline d-sm-none">Leave</span>
                         </button>
                         
                         <button class="btn btn-light position-relative bell-btn" @click="toggleNotifications">
@@ -114,13 +115,11 @@
             <!-- Calendar Container -->
             <div class="timeline-container">
                 
-                <!-- Elite Loading Skeleton -->
                 <div v-if="isLoading" class="skeleton-loader">
                     <div class="skeleton-header"></div>
-                    <div class="skeleton-row" v-for="i in 6" :key="i"></div>
+                    <div class="skeleton-row" v-for="i in 8" :key="i"></div>
                 </div>
 
-                <!-- Actual Grid -->
                 <div v-else class="timeline-scroll-area">
                     <div class="grid-header">
                         <div class="col-emp">EMPLOYEE</div>
@@ -136,10 +135,8 @@
                                 <small style="display:block; font-size:10px; color:var(--text-muted);">{{ emp.role }}</small>
                             </div>
                             
-                            <!-- Grid Background -->
                             <div class="grid-cell" v-for="day in days" :key="'bg-'+day.date" :class="{ weekend: day.isWeekend, today: day.isToday }"></div>
                             
-                            <!-- Leave Bars -->
                             <div v-for="leave in getLeavesForEmp(emp.name)" :key="leave.id" 
                                  class="leave-bar" 
                                  :class="leave.typeClass"
@@ -153,24 +150,23 @@
                 
                 <!-- Legend -->
                 <div class="legend-bar">
-                    <div class="legend-item"><div class="legend-color bg-sick"></div> Sick Leave</div>
-                    <div class="legend-item"><div class="legend-color bg-annual"></div> Annual Leave</div>
+                    <div class="legend-item"><div class="legend-color bg-sick"></div> Sick</div>
+                    <div class="legend-item"><div class="legend-color bg-annual"></div> Annual</div>
                     <div class="legend-item"><div class="legend-color bg-bereavement"></div> Bereavement</div>
-                    <div class="legend-item"><div class="legend-color bg-maternity"></div> Casual / Maternity</div>
+                    <div class="legend-item"><div class="legend-color bg-maternity"></div> Casual/Maternity</div>
                     <div class="legend-item"><div class="legend-color bg-unpaid"></div> Unpaid</div>
                 </div>
             </div>
 
-            <!-- Elite Footer -->
+            <!-- Footer -->
             <footer class="elite-footer">
                 <div class="footer-content">
                     <div class="footer-left">
-                        <div class="brand-icon-small">
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                        </div>
+                        <!-- YOUR FOOTER LOGO HERE -->
+                        <img src="simplyve-logo2.png" alt="Symplyve" class="brand-logo-small">
                         <span>Symplyve &copy; 2026. Built for elite teams.</span>
                     </div>
-                    <div class="footer-right">
+                    <div class="footer-right d-none d-md-flex">
                         <a href="#">Privacy</a>
                         <a href="#">Terms</a>
                         <a href="#">Support</a>
@@ -179,7 +175,7 @@
             </footer>
         </main>
 
-        <!-- ================= NOTIFICATIONS PANEL ================= -->
+        <!-- Notifications Panel -->
         <div class="notification-panel" :class="{ 'show': showNotifications }">
             <div class="notif-header">
                 <h5>Notifications</h5>
@@ -201,9 +197,9 @@
             </div>
         </div>
 
-        <!-- ================= APPLY LEAVE MODAL ================= -->
+        <!-- Apply Leave Modal (Full screen on mobile via class) -->
         <div class="modal fade" id="applyLeaveModal" tabindex="-1" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
                 <div class="modal-content elite-modal">
                     <div class="modal-header border-0 pb-0">
                         <h5 class="modal-title fw-bold">Apply for Leave</h5>
@@ -212,9 +208,17 @@
                     <div class="modal-body p-4">
                         <form @submit.prevent="submitLeave">
                             
-                            <!-- Inline Validation Error -->
                             <div v-if="validationError" class="alert alert-danger py-2 px-3 mb-3 validation-error" style="background:#fef2f2; border:none;">
                                 <i class="bi bi-exclamation-triangle-fill"></i> {{ validationError }}
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Applying as...</label>
+                                <select class="form-select" v-model="selectedEmployee" :disabled="isSubmitting">
+                                    <option v-for="emp in employees" :key="emp.id" :value="emp">
+                                        {{ emp.name }} ({{ emp.id }})
+                                    </option>
+                                </select>
                             </div>
 
                             <div class="mb-3">
@@ -239,7 +243,6 @@
                                 </div>
                             </div>
 
-                            <!-- Live Day Counter Preview -->
                             <div v-if="requestedDays > 0" class="mb-3 p-2 rounded" style="background: var(--primary-light); color: var(--primary); font-size: 13px; font-weight: 600; display:flex; align-items:center; gap:8px;">
                                 <i class="bi bi-info-circle"></i> You are requesting {{ requestedDays }} day(s) off.
                             </div>
@@ -251,7 +254,7 @@
                             
                             <button type="submit" class="btn btn-primary w-100 elite-btn d-flex justify-content-center align-items-center gap-2" :disabled="isSubmitting">
                                 <span v-if="isSubmitting" class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                                <span>{{ isSubmitting ? 'Saving to Google Sheets...' : 'Submit Request' }}</span>
+                                <span>{{ isSubmitting ? 'Saving...' : 'Submit Request' }}</span>
                             </button>
                         </form>
                     </div>
@@ -259,7 +262,7 @@
             </div>
         </div>
 
-        <!-- ================= ELITE TOAST CONTAINER ================= -->
+        <!-- Toast Container -->
         <div class="toast-container">
             <div v-for="toast in toasts" :key="toast.id" class="elite-toast" :class="toast.type">
                 <div class="toast-icon">
@@ -273,19 +276,15 @@
 
     </div>
 
-    <!-- ================= SCRIPTS ================= -->
-    <!-- Bootstrap JS -->
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Vue 3 -->
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <!-- Three.js (WebGL Background) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
-    <!-- Custom Feature Scripts (ORDER MATTERS) -->
-    <script src="js/config.js"></script> <!-- Load Config First -->
+    <script src="js/config.js"></script>
     <script src="js/webgl.js"></script>
     <script src="js/notifications.js"></script>
-    <script src="js/api.js"></script>    <!-- Uses CONFIG -->
+    <script src="js/api.js"></script>
     <script src="js/calendar.js"></script>
     <script src="js/leave.js"></script>
     <script src="js/app.js"></script>
