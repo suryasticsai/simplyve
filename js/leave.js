@@ -1,9 +1,8 @@
-// leave.js
 const leaveModule = {
     data() {
         return {
             newLeave: {
-                employeeId: 'EMP-006',
+                employeeId: 'EMP-006', // Ensure this ID exists in your Employees sheet!
                 employeeName: 'Rachel Smith',
                 type: 'annual',
                 startDate: '',
@@ -65,19 +64,8 @@ const leaveModule = {
                 return false;
             }
 
-            const hasOverlap = this.leaves.some(leave => {
-                if (leave.emp !== this.newLeave.employeeName) return false;
-                const newStart = parseInt(this.newLeave.startDate.split('-')[2]);
-                const newEnd = parseInt(this.newLeave.endDate.split('-')[2]);
-                return (newStart >= leave.start && newStart <= leave.end) || 
-                       (newEnd >= leave.start && newEnd <= leave.end);
-            });
-
-            if (hasOverlap) {
-                this.validationError = "You already have an approved leave during this period.";
-                return false;
-            }
-
+            // Note: We removed the frontend overlap check here because 
+            // your new backend does it perfectly! (and has access to all data)
             return true;
         },
 
@@ -90,12 +78,14 @@ const leaveModule = {
                 const response = await this.saveLeaveToSheet(this.newLeave);
 
                 if(response.success) {
+                    // Close modal
                     const modalEl = document.getElementById('applyLeaveModal');
                     bootstrap.Modal.getInstance(modalEl).hide();
 
-                    // Reload data from Google Sheets
+                    // Reload data
                     await this.loadData();
 
+                    // Show success toast
                     this.showToast(`Successfully applied for ${this.requestedDays} days of ${this.newLeave.type} leave.`, 'success');
 
                     this.notifications.unshift({
@@ -107,7 +97,8 @@ const leaveModule = {
                         read: false
                     });
                 } else {
-                    this.showToast("Failed to save to database. Try again.", 'error');
+                    // Display the exact error from the backend (e.g., "Insufficient allowance", "Overlaps an existing request")
+                    this.showToast(response.error || "Failed to save to database.", 'error');
                 }
             } catch (error) {
                 this.showToast("A network error occurred.", 'error');
