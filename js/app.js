@@ -5,7 +5,6 @@ const app = createApp({
     data() {
         return {
             activeTab: 'calendar',
-            // Merge data from all modules
             ...notificationModule.data(),
             ...calendarModule.data(),
             ...leaveModule.data(),
@@ -13,28 +12,18 @@ const app = createApp({
     },
     computed: {
         ...notificationModule.computed,
-        pendingApprovalsCount() {
-            // Mock logic for approval badge
-            return 2;
-        }
+        ...leaveModule.computed, // Merge computed (requestedDays)
+        pendingApprovalsCount() { return 2; }
     },
     methods: {
-        // Merge methods from all modules
         ...notificationModule.methods,
+        ...apiModule.methods, 
         ...calendarModule.methods,
         ...leaveModule.methods,
     },
     mounted() {
-        // Run calendar initialization
-        this.generateDays();
-        
-        // Initialize Bootstrap tooltips if any
-        const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
-        tooltipTriggerList.map(function (tooltipTriggerEl) {
-            return new bootstrap.Tooltip(tooltipTriggerEl)
-        });
+        // Data loads via calendarModule.mounted()
     }
 });
 
-// Mount the app
 app.mount('#app');
