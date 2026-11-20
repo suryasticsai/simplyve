@@ -27,4 +27,4 @@ const notificationModule = {
             this.notifications = this.notifications.filter(n => n.id !== id);
         }
     }
-};
+}; 
