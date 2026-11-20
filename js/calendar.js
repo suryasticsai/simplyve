@@ -1,4 +1,3 @@
-// calendar.js
 const calendarModule = {
     data() {
         return {
@@ -36,6 +35,8 @@ const calendarModule = {
             };
 
             this.leaves = leaveData.map(row => {
+                if (!row.StartDate || !row.EndDate) return null;
+                
                 const startDay = parseInt(row.StartDate.split('-')[2]);
                 const endDay = parseInt(row.EndDate.split('-')[2]);
                 const typeInfo = typeMap[row.Type.toLowerCase()] || { class: 'bg-annual', label: row.Type };
@@ -49,7 +50,7 @@ const calendarModule = {
                     label: typeInfo.label,
                     status: row.Status
                 };
-            });
+            }).filter(Boolean);
             
             this.isLoading = false;
         },
@@ -82,4 +83,4 @@ const calendarModule = {
             };
         }
     }
-}; 
+};
