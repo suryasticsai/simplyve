@@ -1,11 +1,10 @@
-// app.js
 const { createApp } = Vue;
 
 const app = createApp({
     data() {
         return {
             activeTab: 'calendar',
-            isMobileSidebarOpen: false, // <--- Added for mobile hamburger menu
+            isMobileSidebarOpen: false,
             ...notificationModule.data(),
             ...calendarModule.data(),
             ...leaveModule.data(),
@@ -23,7 +22,9 @@ const app = createApp({
         ...leaveModule.methods,
     },
     mounted() {
-        // Initialization handled by calendarModule
+        // CRITICAL FIX: Actually trigger the calendar generation and data fetch!
+        this.generateDays();
+        this.loadData();
     }
 });
 
