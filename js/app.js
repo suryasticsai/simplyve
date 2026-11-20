@@ -12,17 +12,17 @@ const app = createApp({
     },
     computed: {
         ...notificationModule.computed,
-        ...leaveModule.computed, // Merge computed (requestedDays)
+        ...leaveModule.computed, // Fixes requestedDays live counter
         pendingApprovalsCount() { return 2; }
     },
     methods: {
         ...notificationModule.methods,
         ...apiModule.methods, 
-        ...calendarModule.methods,
+        ...calendarModule.methods, // Fixes isLoading / loadData warnings
         ...leaveModule.methods,
     },
     mounted() {
-        // Data loads via calendarModule.mounted()
+        // Initialization handled by calendarModule.mounted()
     }
 });
 
