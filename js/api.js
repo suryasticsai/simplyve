@@ -22,6 +22,10 @@ const apiModule = {
             try {
                 const response = await fetch(CONFIG.API_URL, {
                     method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain;charset=utf-8', // CRITICAL FOR GAS
+                    },
+                    redirect: 'follow',
                     body: JSON.stringify({
                         action: 'addLeave',
                         payload: leaveData
