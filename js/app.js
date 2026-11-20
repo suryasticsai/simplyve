@@ -5,6 +5,7 @@ const app = createApp({
     data() {
         return {
             activeTab: 'calendar',
+            isMobileSidebarOpen: false, // <--- Added for mobile hamburger menu
             ...notificationModule.data(),
             ...calendarModule.data(),
             ...leaveModule.data(),
@@ -12,18 +13,18 @@ const app = createApp({
     },
     computed: {
         ...notificationModule.computed,
-        ...leaveModule.computed, // Fixes requestedDays live counter
+        ...leaveModule.computed,
         pendingApprovalsCount() { return 2; }
     },
     methods: {
         ...notificationModule.methods,
         ...apiModule.methods, 
-        ...calendarModule.methods, // Fixes isLoading / loadData warnings
+        ...calendarModule.methods,
         ...leaveModule.methods,
     },
     mounted() {
-        // Initialization handled by calendarModule.mounted()
+        // Initialization handled by calendarModule
     }
 });
 
-app.mount('#app'); 
+app.mount('#app');
