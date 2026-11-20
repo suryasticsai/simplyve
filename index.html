@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>simplyve · Elite Leave Management</title>
+    <title>Symplyve · Elite Leave Management</title>
     
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -30,7 +30,7 @@
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                 </div>
                 <div class="brand-text">
-                    <h1>simplyve</h1>
+                    <h1>Symplyve</h1>
                     <p>Leave Management</p>
                 </div>
             </div>
@@ -148,7 +148,7 @@
                         <div class="brand-icon-small">
                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>
                         </div>
-                        <span>simplyve &copy; 2026. Built for elite teams.</span>
+                        <span>Symplyve &copy; 2026. Built for elite teams.</span>
                     </div>
                     <div class="footer-right">
                         <a href="#">Privacy</a>
@@ -159,7 +159,7 @@
             </footer>
         </main>
 
-        <!-- Notifications Panel (Collapsible) -->
+        <!-- Notifications Panel -->
         <div class="notification-panel" :class="{ 'show': showNotifications }">
             <div class="notif-header">
                 <h5>Notifications</h5>
@@ -177,7 +177,7 @@
             </div>
         </div>
 
-        <!-- Apply Leave Modal (Bootstrap) -->
+        <!-- Apply Leave Modal -->
         <div class="modal fade" id="applyLeaveModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
                 <div class="modal-content elite-modal">
@@ -199,11 +199,11 @@
                             <div class="row mb-3">
                                 <div class="col-6">
                                     <label class="form-label">Start Date</label>
-                                    <input type="date" class="form-control" v-model="newLeave.start" required>
+                                    <input type="date" class="form-control" v-model="newLeave.startDate" required>
                                 </div>
                                 <div class="col-6">
                                     <label class="form-label">End Date</label>
-                                    <input type="date" class="form-control" v-model="newLeave.end" required>
+                                    <input type="date" class="form-control" v-model="newLeave.endDate" required>
                                 </div>
                             </div>
                             <div class="mb-4">
@@ -223,9 +223,11 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
-    <!-- Custom Feature Scripts -->
+    <!-- Custom Feature Scripts (ORDER MATTERS) -->
+    <script src="js/config.js"></script> <!-- Load Config First -->
     <script src="js/webgl.js"></script>
     <script src="js/notifications.js"></script>
+    <script src="js/api.js"></script>    <!-- Uses CONFIG -->
     <script src="js/calendar.js"></script>
     <script src="js/leave.js"></script>
     <script src="js/app.js"></script>
