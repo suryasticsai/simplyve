@@ -26,4 +26,4 @@ const app = createApp({
     }
 });
 
-app.mount('#app');
+app.mount('#app'); 
