@@ -12,11 +12,10 @@ const leaveModule = {
             },
             isSubmitting: false,
             validationError: '',
-            toasts: [] // Local toast state for the leave module
+            toasts: [] 
         }
     },
     computed: {
-        // Automatically calculate requested days
         requestedDays() {
             if (!this.newLeave.startDate || !this.newLeave.endDate) return 0;
             const start = new Date(this.newLeave.startDate);
@@ -28,7 +27,6 @@ const leaveModule = {
     },
     methods: {
         openLeaveModal() {
-            // Reset form and errors cleanly
             this.newLeave = {
                 employeeId: 'EMP-006',
                 employeeName: 'Rachel Smith',
@@ -67,10 +65,8 @@ const leaveModule = {
                 return false;
             }
 
-            // Overlap Check: Does this conflict with any existing leave for this employee?
             const hasOverlap = this.leaves.some(leave => {
                 if (leave.emp !== this.newLeave.employeeName) return false;
-                // Approximate overlap check based on day numbers (from calendar.js)
                 const newStart = parseInt(this.newLeave.startDate.split('-')[2]);
                 const newEnd = parseInt(this.newLeave.endDate.split('-')[2]);
                 return (newStart >= leave.start && newStart <= leave.end) || 
@@ -94,17 +90,14 @@ const leaveModule = {
                 const response = await this.saveLeaveToSheet(this.newLeave);
 
                 if(response.success) {
-                    // 1. Close modal
                     const modalEl = document.getElementById('applyLeaveModal');
                     bootstrap.Modal.getInstance(modalEl).hide();
 
-                    // 2. Reload calendar data
+                    // Reload data from Google Sheets
                     await this.loadData();
 
-                    // 3. Show Elite Toast
                     this.showToast(`Successfully applied for ${this.requestedDays} days of ${this.newLeave.type} leave.`, 'success');
 
-                    // 4. Add to global notifications panel
                     this.notifications.unshift({
                         id: Date.now(),
                         text: `Your ${this.newLeave.type} leave request was successfully submitted.`,
@@ -123,12 +116,10 @@ const leaveModule = {
             }
         },
 
-        // Custom Elite Toast System
         showToast(message, type = 'success') {
             const id = Date.now();
             this.toasts.push({ id, message, type });
             
-            // Auto-remove after 4 seconds
             setTimeout(() => {
                 this.toasts = this.toasts.filter(t => t.id !== id);
             }, 4000);
