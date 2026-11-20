@@ -5,8 +5,7 @@ const notificationModule = {
             showNotifications: false,
             notifications: [
                 { id: 1, text: "Rachel Smith approved your Annual Leave request.", time: "2 mins ago", type: "success", icon: "bi-check-circle", read: false },
-                { id: 2, text: "Reminder: Submit your timesheet by Friday.", time: "1 hour ago", type: "info", icon: "bi-info-circle", read: false },
-                { id: 3, text: "New policy update regarding Q4 holidays.", time: "2 days ago", type: "info", icon: "bi-megaphone", read: true }
+                { id: 2, text: "Reminder: Submit your timesheet by Friday.", time: "1 hour ago", type: "info", icon: "bi-info-circle", read: false }
             ]
         }
     },
@@ -18,7 +17,6 @@ const notificationModule = {
     methods: {
         toggleNotifications() {
             this.showNotifications = !this.showNotifications;
-            // Mark as read when opened
             if (this.showNotifications) {
                 setTimeout(() => {
                     this.notifications.forEach(n => n.read = true);
