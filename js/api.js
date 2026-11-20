@@ -20,23 +20,23 @@ const apiModule = {
         },
         async saveLeaveToSheet(leaveData) {
             try {
-                // Encode the JSON object to pass it via URL parameter
-                const payloadStr = encodeURIComponent(JSON.stringify(leaveData));
+                // Base64 encode the payload as expected by your new backend
+                const payloadStr = btoa(JSON.stringify(leaveData));
                 const url = `${CONFIG.API_URL}?action=addLeave&payload=${payloadStr}`;
                 
-                // Use GET request to avoid CORS preflight issues in Google Apps Script
-                const response = await fetch(url, {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json'
-                    }
-                });
+                const response = await fetch(url);
+                const data = await response.json();
                 
-                return await response.json();
+                // If the backend throws a UserError (e.g., overlap, allowance), it returns { success: false, error: '...' }
+                if (!data.success && data.error) {
+                    return { success: false, error: data.error };
+                }
+                
+                return data;
             } catch (error) {
-                console.error("Error saving to Google Sheets:", error);
-                return { success: false };
+                console.error("Fetch Error:", error);
+                return { success: false, error: "Network error. Check console." };
             }
         }
     }
-}; 
+};
