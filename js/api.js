@@ -1,4 +1,3 @@
-// api.js
 const apiModule = {
     methods: {
         async fetchLeavesFromSheet() {
@@ -21,17 +20,18 @@ const apiModule = {
         },
         async saveLeaveToSheet(leaveData) {
             try {
-                const response = await fetch(CONFIG.API_URL, {
-                    method: 'POST',
+                // Encode the JSON object to pass it via URL parameter
+                const payloadStr = encodeURIComponent(JSON.stringify(leaveData));
+                const url = `${CONFIG.API_URL}?action=addLeave&payload=${payloadStr}`;
+                
+                // Use GET request to avoid CORS preflight issues in Google Apps Script
+                const response = await fetch(url, {
+                    method: 'GET',
                     headers: {
-                        'Content-Type': 'text/plain;charset=utf-8', // CRITICAL: Bypasses CORS preflight
-                    },
-                    redirect: 'follow',
-                    body: JSON.stringify({
-                        action: 'addLeave',
-                        payload: leaveData
-                    })
+                        'Accept': 'application/json'
+                    }
                 });
+                
                 return await response.json();
             } catch (error) {
                 console.error("Error saving to Google Sheets:", error);
@@ -39,4 +39,4 @@ const apiModule = {
             }
         }
     }
-}; 
+};
