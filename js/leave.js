@@ -1,4 +1,4 @@
-// leave.js
+// leave.js 
 const leaveModule = {
     data() {
         return {
