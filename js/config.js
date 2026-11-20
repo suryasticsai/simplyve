@@ -1,5 +1,3 @@
-// config.js
 const CONFIG = {
-    // Your deployed Google Apps Script Web App URL
-    API_URL: "https://script.google.com/macros/s/AKfycbwWLl3Q-RDq01xNs1dkZ2FyNUnUFSySxuFjpKzhcTQ5APEJip73-9Afv-ljkHpdou0o/exec"
+    API_URL: "https://script.google.com/macros/s/AKfycby_E7JnzBicjh1EQjXp-Xvro-lxb4KcgfA7Z7aoJFtcrK57Zo1x38kbd3C69CjeQEtb/exec"
 };
