@@ -44,18 +44,15 @@ const calendarModule = {
     methods: {
         async loadData() {
             this.isLoading = true;
-            
-            // FAILSAFE: Force loading to stop after 8 seconds no matter what
             const failsafe = setTimeout(() => {
                 if (this.isLoading) {
                     this.isLoading = false;
-                    this.showToast("Google Sheets is taking too long to respond. Check your API URL.", "error");
+                    console.error("Failsafe triggered: Google Sheets took too long.");
                 }
             }, 8000);
 
             try {
-                console.log("Fetching data from:", CONFIG.API_URL);
-                
+                console.log("Fetching data from API...");
                 const [empRes, leaveRes] = await Promise.all([
                     fetch(`${CONFIG.API_URL}?action=getEmployees`),
                     fetch(`${CONFIG.API_URL}?action=getLeaves`)
@@ -64,8 +61,7 @@ const calendarModule = {
                 const empData = await empRes.json();
                 const leaveData = await leaveRes.json();
                 
-                console.log("Employees received:", empData.length);
-                console.log("Leaves received:", leaveData.length);
+                console.log(`Success: Loaded ${empData.length} employees and ${leaveData.length} leaves.`);
 
                 this.employees = Array.isArray(empData) ? empData.map(e => ({ id: e.ID, name: e.Name, role: e.Role })) : [];
                 
@@ -97,9 +93,8 @@ const calendarModule = {
 
             } catch (error) {
                 console.error("Fetch Error Details:", error);
-                this.showToast("Failed to connect to Google Sheets. Check console.", "error");
             } finally {
-                clearTimeout(failsafe); // Cancel failsafe if request finishes
+                clearTimeout(failsafe);
                 this.isLoading = false;
             }
         },
@@ -192,7 +187,7 @@ const calendarModule = {
                     labels: ['Annual', 'Sick', 'Casual', 'WFH'],
                     datasets: [{
                         data: [counts.annual, counts.sick, counts.casual, counts.wfh],
-                        backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#3b82f6'],
+                        backgroundColor: ['#3b82f6', '#f59e0b', '#8b5cf6', '#06b6d4'],
                         borderWidth: 0, hoverOffset: 6
                     }]
                 },
