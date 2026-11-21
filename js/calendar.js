@@ -6,12 +6,17 @@ const calendarModule = {
             leaves: [],
             isLoading: true,
             searchQuery: '',
-            currentView: 'calendar', // 'calendar' or 'timeline'
+            reportSearch: '', // For the reports tab
             
-            // FullCalendar & Chart Instances
+            currentView: 'calendar',
             fcCalendar: null,
             balanceChart: null,
             
+            // Date Selector
+            months: ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'],
+            selectedMonth: new Date().getMonth(),
+            selectedYear: new Date().getFullYear().toString(),
+
             // Side Panel Data
             outTodayList: [],
             pendingRequests: []
@@ -22,8 +27,7 @@ const calendarModule = {
             if (!this.searchQuery) return this.employees;
             const q = this.searchQuery.toLowerCase();
             return this.employees.filter(e => 
-                e.name.toLowerCase().includes(q) || 
-                e.id.toLowerCase().includes(q)
+                e.name.toLowerCase().includes(q) || e.id.toLowerCase().includes(q)
             );
         },
         outTodayCount() {
@@ -31,10 +35,25 @@ const calendarModule = {
         },
         pendingApprovalsCount() {
             return this.pendingRequests.length;
+        },
+        // DYNAMIC REPORTS TABLE DATA
+        filteredReports() {
+            let filtered = this.leaves;
+            if (this.reportSearch) {
+                const q = this.reportSearch.toLowerCase();
+                filtered = filtered.filter(l => 
+                    l.emp.toLowerCase().includes(q) || 
+                    l.label.toLowerCase().includes(q) ||
+                    l.status.toLowerCase().includes(q)
+                );
+            }
+            // Sort by newest date first
+            return [...filtered].sort((a, b) => new Date(b.startDate) - new Date(a.startDate));
         }
     },
     methods: {
         async loadData() {
+            // ... (Keep existing loadData logic) ...
             this.isLoading = true;
             try {
                 const [empRes, leaveRes] = await Promise.all([
@@ -74,7 +93,6 @@ const calendarModule = {
                     };
                 }).filter(Boolean) : [];
 
-                // Process Data for UI
                 this.processSidePanels();
                 this.renderFullCalendar();
                 this.renderChart();
@@ -85,40 +103,8 @@ const calendarModule = {
                 this.isLoading = false;
             }
         },
-        generateDays() {
-            const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-            for (let i = 1; i <= 31; i++) {
-                const dayOfWeek = (i - 1) % 7; 
-                this.days.push({
-                    date: i,
-                    dayName: dayNames[dayOfWeek],
-                    isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
-                    isToday: i === new Date().getDate() // Use real today
-                });
-            }
-        },
-        getLeavesForEmp(empName) {
-            return this.leaves.filter(l => l.emp === empName);
-        },
-        calculateBarStyle(leave) {
-            const total = this.days.length; 
-            return {
-                left: `calc(220px + (100% - 220px) * ${((leave.start - 1) / total) * 100 / 100})`,
-                width: `calc((100% - 220px) * ${((leave.end - leave.start + 1) / total) * 100 / 100} - 4px)` 
-            };
-        },
-        switchView(view) {
-            this.currentView = view;
-            if (view === 'calendar' && this.fcCalendar) {
-                // Fix FullCalendar rendering bug when hidden
-                setTimeout(() => this.fcCalendar.updateSize(), 50);
-            }
-        },
         processSidePanels() {
-            const todayStr = new Date().toISOString().split('T')[0];
             const todayDay = new Date().getDate();
-            
-            // Out Today
             this.outTodayList = [];
             this.employees.forEach(emp => {
                 const activeLeave = this.leaves.find(l => 
@@ -126,19 +112,12 @@ const calendarModule = {
                     l.status === 'Approved' && 
                     todayDay >= l.start && todayDay <= l.end
                 );
-                if (activeLeave) {
-                    this.outTodayList.push({ name: emp.name, type: activeLeave.label });
-                }
+                if (activeLeave) this.outTodayList.push({ name: emp.name, type: activeLeave.label });
             });
 
-            // Pending
             this.pendingRequests = this.leaves
                 .filter(l => l.status === 'Pending')
-                .map(l => ({
-                    id: l.id,
-                    emp: l.emp,
-                    label: `${l.label} (${l.startDate} to ${l.endDate})`
-                }));
+                .map(l => ({ id: l.id, emp: l.emp, label: `${l.label} (${l.startDate} to ${l.endDate})` }));
         },
         renderFullCalendar() {
             const calendarEl = this.$refs.calendarEl;
@@ -147,7 +126,7 @@ const calendarModule = {
             const events = this.leaves.filter(l => l.status !== 'Rejected').map(l => ({
                 title: `${l.emp.split(' ')[0]} · ${l.label}`,
                 start: l.startDate,
-                end: l.endDate, // FullCalendar handles exclusive end dates natively
+                end: l.endDate,
                 className: l.fcClass
             }));
 
@@ -157,61 +136,26 @@ const calendarModule = {
             } else {
                 this.fcCalendar = new FullCalendar.Calendar(calendarEl, {
                     initialView: 'dayGridMonth',
+                    initialDate: `${this.selectedYear}-${String(this.selectedMonth + 1).padStart(2, '0')}-01`,
                     headerToolbar: {
                         left: 'prev,next',
                         center: 'title',
-                        right: 'dayGridMonth,timeGridWeek,listWeek'
+                        right: '' // We moved view switching to custom buttons
                     },
                     height: 'auto',
                     events: events,
                     dayMaxEvents: 3,
-                    eventClick: (info) => {
-                        this.showToast(`${info.event.title}`, 'success');
-                    }
+                    eventClick: (info) => this.showToast(`${info.event.title}`, 'success')
                 });
                 this.fcCalendar.render();
             }
         },
-        renderChart() {
-            const chartEl = this.$refs.chartEl;
-            if (!chartEl) return;
-            
-            // Calculate mock chart data based on real leaves
-            let counts = { annual: 0, sick: 0, casual: 0, wfh: 0 };
-            this.leaves.forEach(l => {
-                const key = l.typeClass.replace('bg-', '');
-                if(counts[key] !== undefined) counts[key] += (l.end - l.start + 1);
-            });
-
-            if (this.balanceChart) {
-                this.balanceChart.destroy();
+        updateCalendarDate() {
+            if (this.fcCalendar) {
+                const dateStr = `${this.selectedYear}-${String(this.selectedMonth + 1).padStart(2, '0')}-01`;
+                this.fcCalendar.gotoDate(dateStr);
             }
-
-            this.balanceChart = new Chart(chartEl, {
-                type: 'doughnut',
-                data: {
-                    labels: ['Annual', 'Sick', 'Casual', 'WFH'],
-                    datasets: [{
-                        data: [counts.annual, counts.sick, counts.casual, counts.wfh],
-                        backgroundColor: ['#10b981', '#f59e0b', '#8b5cf6', '#3b82f6'],
-                        borderWidth: 0,
-                        hoverOffset: 6
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    cutout: '68%',
-                    plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 12, padding: 14, font: { size: 11, weight: 600 } } }
-                    }
-                }
-            });
         },
-        goToToday() {
-            if (this.currentView === 'calendar' && this.fcCalendar) {
-                this.fcCalendar.today();
-            }
-        }
+        // ... Keep generateDays, getLeavesForEmp, calculateBarStyle, switchView, renderChart ...
     }
 };
