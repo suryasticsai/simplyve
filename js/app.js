@@ -3,9 +3,9 @@ const { createApp } = Vue;
 const app = createApp({
     data() {
         return {
-            activeTab: 'calendar',
-            isMobileSidebarOpen: false,
-            searchQuery: '', // <--- Added for live search
+            activeTab: 'calendar',     // For the horizontal navigation
+            currentView: 'timeline',   // 'timeline', 'grid', 'agenda'
+            isMobileNavOpen: false,    // Mobile drawer toggle
             ...notificationModule.data(),
             ...calendarModule.data(),
             ...leaveModule.data(),
@@ -13,33 +13,9 @@ const app = createApp({
     },
     computed: {
         ...notificationModule.computed,
-        ...leaveModule.computed,
-        pendingApprovalsCount() { return 2; },
-        
-        // <--- NEW: Live Search Logic -->
-        filteredEmployees() {
-            if (!this.searchQuery) return this.employees;
-            const q = this.searchQuery.toLowerCase();
-            return this.employees.filter(e => 
-                e.name.toLowerCase().includes(q) || 
-                e.id.toLowerCase().includes(q)
-            );
-        },
-        
-        // <--- NEW: Out Today Logic -->
-        outTodayCount() {
-            const today = 14; // Mocking today as March 14th
-            let count = 0;
-            this.employees.forEach(emp => {
-                // Find approved leaves for this employee
-                const empLeaves = this.leaves.filter(l => l.emp === emp.name && l.status === 'Approved');
-                // Check if today falls within the leave range
-                if (empLeaves.some(l => today >= l.start && today <= l.end)) {
-                    count++;
-                }
-            });
-            return count;
-        }
+        ...calendarModule.computed, // Pulls in filteredEmployees, outTodayCount, etc.
+        ...leaveModule.computed,    // Pulls in requestedDays
+        pendingApprovalsCount() { return 2; }
     },
     methods: {
         ...notificationModule.methods,
@@ -48,7 +24,6 @@ const app = createApp({
         ...leaveModule.methods,
     },
     mounted() {
-        // Trigger the data fetch on load
         this.generateDays();
         this.loadData();
     }
