@@ -77,9 +77,14 @@ const calendarModule = {
                     };
                 }).filter(Boolean) : [];
 
-                this.generateDays(); // Generate correct days based on selection
+                this.generateDays(); 
                 this.processSidePanels();
-                this.renderFullCalendar();
+                
+                // FIX: Wait for Vue to finish rendering the DOM before building the calendar
+                this.$nextTick(() => {
+                    this.renderFullCalendar();
+                });
+                
                 this.renderChart();
 
             } catch (error) {
@@ -88,7 +93,6 @@ const calendarModule = {
                 this.isLoading = false;
             }
         },
-        // NEW: Dynamically generate days based on month/year
         generateDays() {
             this.days = [];
             const year = parseInt(this.selectedYear);
@@ -125,32 +129,44 @@ const calendarModule = {
         },
         renderFullCalendar() {
             const calendarEl = this.$refs.calendarEl;
-            if (!calendarEl) return;
+            if (!calendarEl) {
+                console.error("Calendar DOM element not found!");
+                return;
+            }
 
-            const events = this.leaves.filter(l => l.status !== 'Rejected').map(l => ({
-                title: `${l.emp.split(' ')[0]} · ${l.label}`,
-                start: l.startDate,
-                end: l.endDate,
-                className: l.fcClass
-            }));
+            // FIX: Catch errors if FullCalendar library fails to load from CDN
+            try {
+                if (typeof FullCalendar === 'undefined') {
+                    throw new Error("FullCalendar library is not loaded. Check your internet connection or adblocker.");
+                }
 
-            if (this.fcCalendar) {
-                this.fcCalendar.removeAllEvents();
-                this.fcCalendar.addEventSource(events);
-            } else {
-                this.fcCalendar = new FullCalendar.Calendar(calendarEl, {
-                    initialView: 'dayGridMonth',
-                    initialDate: `${this.selectedYear}-${String(this.selectedMonth + 1).padStart(2, '0')}-01`,
-                    headerToolbar: { left: 'prev,next', center: 'title', right: '' },
-                    height: '100%', // Fills the wrapper
-                    events: events,
-                    dayMaxEvents: 3
-                });
-                this.fcCalendar.render();
+                const events = this.leaves.filter(l => l.status !== 'Rejected').map(l => ({
+                    title: `${l.emp.split(' ')[0]} · ${l.label}`,
+                    start: l.startDate,
+                    end: l.endDate,
+                    className: l.fcClass
+                }));
+
+                if (this.fcCalendar) {
+                    this.fcCalendar.removeAllEvents();
+                    this.fcCalendar.addEventSource(events);
+                } else {
+                    this.fcCalendar = new FullCalendar.Calendar(calendarEl, {
+                        initialView: 'dayGridMonth',
+                        initialDate: `${this.selectedYear}-${String(this.selectedMonth + 1).padStart(2, '0')}-01`,
+                        headerToolbar: { left: 'prev,next', center: 'title', right: '' },
+                        height: '100%',
+                        events: events,
+                        dayMaxEvents: 3
+                    });
+                    this.fcCalendar.render();
+                }
+            } catch (error) {
+                console.error("Failed to render FullCalendar:", error.message);
+                calendarEl.innerHTML = `<div class="text-center text-danger py-5">Failed to load Calendar: ${error.message}</div>`;
             }
         },
         getLeavesForEmp(empName) { return this.leaves.filter(l => l.emp === empName); },
-        // FIXED MATH for Gantt chart
         calculateBarStyle(leave) {
             const total = this.days.length; 
             const startPct = ((leave.start - 1) / total) * 100;
@@ -168,7 +184,7 @@ const calendarModule = {
             }
         },
         updateCalendarDate() {
-            this.generateDays(); // Regenerate days for Gantt chart
+            this.generateDays(); 
             if (this.fcCalendar) {
                 const dateStr = `${this.selectedYear}-${String(this.selectedMonth + 1).padStart(2, '0')}-01`;
                 this.fcCalendar.gotoDate(dateStr);
