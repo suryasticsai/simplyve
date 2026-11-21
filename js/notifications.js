@@ -3,7 +3,7 @@ const notificationModule = {
         return {
             showNotifications: false,
             notifications: [
-                { id: 1, text: "Rachel Smith approved your Annual Leave request.", time: "2 mins ago", type: "success", icon: "bi-check-circle", read: false }
+                { id: 1, text: "Welcome to Symplyve!", time: "Just now", type: "success", icon: "bi-check-circle", read: false }
             ]
         }
     },
@@ -16,9 +16,7 @@ const notificationModule = {
         toggleNotifications() {
             this.showNotifications = !this.showNotifications;
             if (this.showNotifications) {
-                setTimeout(() => {
-                    this.notifications.forEach(n => n.read = true);
-                }, 1500);
+                setTimeout(() => { this.notifications.forEach(n => n.read = true); }, 1500);
             }
         }
     }
