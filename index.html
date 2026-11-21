@@ -26,14 +26,14 @@
   <!-- ===== HEADER ===== -->
   <header class="top-header">
     <a href="#" class="brand">
-      <!-- Inline styles added to prevent massive logo bug -->
+      <!-- Inline style prevents logo from blowing up if CSS fails -->
       <img src="simplyve-logo.png" alt="Symplyve" style="max-height: 36px; width: auto; object-fit: contain;" onerror="this.style.display='none'">
       <span class="brand-name">Symplyve</span>
     </a>
 
     <div class="header-actions ms-auto">
-      <!-- DEBUG TOGGLE -->
-      <button class="btn-icon text-primary" title="Toggle Console" @click="toggleDebug">
+      <!-- DEBUG CONSOLE TOGGLE -->
+      <button class="btn-icon text-primary" title="Toggle Debug Console" @click="toggleDebug">
         <i class="bi bi-terminal fs-5"></i>
       </button>
 
@@ -243,11 +243,10 @@
           </table>
         </div>
       </div>
-
     </div>
   </main>
 
-  <!-- ================= DEBUG CONSOLE (NEW) ================= -->
+  <!-- ================= DEBUG CONSOLE ================= -->
   <div class="debug-console" :class="{ 'open': showDebug }">
     <div class="debug-header">
       <div class="d-flex align-items-center gap-2">
@@ -332,6 +331,24 @@
       </div>
       <div style="font-weight:500;font-size:0.9rem">{{ toast.message }}</div>
     </div>
+  </div>
+
+  <!-- Notifications Panel -->
+  <div class="notification-overlay" v-if="showNotifications" @click="toggleNotifications"></div>
+  <div class="notification-panel" :class="{ 'show': showNotifications }">
+      <div class="notif-header">
+          <h5>Notifications</h5>
+          <button @click="toggleNotifications" class="btn-close-custom"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="notif-body">
+          <div class="notif-item" v-for="notif in notifications" :key="notif.id" :class="{ unread: !notif.read }">
+              <div class="notif-icon" :class="notif.type"><i class="bi" :class="notif.icon"></i></div>
+              <div class="notif-content">
+                  <p>{{ notif.text }}</p>
+                  <small>{{ notif.time }}</small>
+              </div>
+          </div>
+      </div>
   </div>
 
 </div>
