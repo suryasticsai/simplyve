@@ -16,187 +16,121 @@
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
-
-    <!-- Inline CSS for New Dashboard Elements -->
-    <style>
-        /* Dashboard Stats Row */
-        .stats-row {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-            margin: 0 24px 24px 24px;
-        }
-        .stat-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.5);
-            border-radius: 16px;
-            padding: 20px;
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            box-shadow: 0 4px 20px -5px rgba(0,0,0,0.05);
-            transition: transform 0.2s ease;
-        }
-        .stat-card:hover { transform: translateY(-3px); }
-        .stat-icon {
-            width: 48px; height: 48px; border-radius: 12px;
-            display: grid; place-items: center; font-size: 22px;
-        }
-        .stat-icon.primary { background: #ecfdf5; color: #10b981; }
-        .stat-icon.warning { background: #fffbeb; color: #f59e0b; }
-        .stat-icon.danger  { background: #fef2f2; color: #ef4444; }
-        .stat-info h4 { font-family: 'Outfit', sans-serif; font-size: 24px; font-weight: 700; margin: 0; line-height: 1; color: #1e293b; }
-        .stat-info p { font-size: 12px; font-weight: 600; color: #64748b; margin: 4px 0 0 0; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        /* Search Bar */
-        .search-container {
-            position: relative;
-            margin-right: auto;
-        }
-        .search-input {
-            background: rgba(255,255,255,0.8);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 8px 16px 8px 36px;
-            font-size: 13px;
-            width: 250px;
-            transition: all 0.3s;
-        }
-        .search-input:focus {
-            background: #fff;
-            width: 300px;
-            outline: none;
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px var(--primary-light);
-        }
-        .search-icon {
-            position: absolute;
-            left: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            font-size: 14px;
-        }
-
-        /* Avatars in Grid */
-        .emp-avatar {
-            width: 28px; height: 28px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, #e2e8f0, #f1f5f9);
-            color: #475569;
-            display: grid; place-items: center;
-            font-size: 10px; font-weight: 700;
-            margin-right: 10px;
-            flex-shrink: 0;
-        }
-    </style>
 </head>
 <body>
     <!-- WebGL Background -->
     <canvas id="webgl-canvas"></canvas>
 
-    <!-- Mobile Sidebar Backdrop -->
-    <div class="sidebar-backdrop" :class="{ 'show': isMobileSidebarOpen }" @click="isMobileSidebarOpen = false"></div>
-
     <div id="app" class="app-container">
         
-        <!-- ================= SIDEBAR ================= -->
-        <aside class="sidebar" :class="{ 'mobile-open': isMobileSidebarOpen }">
-            <div class="brand">
-                <!-- YOUR LOGO HERE -->
-                <img src="simplyve-logo.png" alt="Symplyve" class="brand-logo" onerror="this.style.display='none'">
-                <div class="brand-text">
-                    <h1>Symplyve</h1>
-                    <p>Leave Management</p>
+        <!-- ================= TOP HEADER ================= -->
+        <header class="top-header">
+            <div class="header-left">
+                <!-- Mobile Hamburger -->
+                <button class="btn-icon d-md-none me-3" @click="isMobileNavOpen = true">
+                    <i class="bi bi-list fs-4"></i>
+                </button>
+                
+                <div class="brand">
+                    <div class="brand-logo">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    </div>
+                    <span class="brand-name">Symplyve</span>
                 </div>
             </div>
 
-            <div class="nav-scroll">
-                <a href="#" class="nav-item" @click.prevent="activeTab = 'welcome'; isMobileSidebarOpen = false" :class="{ active: activeTab === 'welcome' }">
-                    <div class="nav-left"><i class="bi bi-house"></i> Welcome</div>
-                </a>
-                <a href="#" class="nav-item" @click.prevent="activeTab = 'leave'; isMobileSidebarOpen = false" :class="{ active: activeTab === 'leave' }">
-                    <div class="nav-left"><i class="bi bi-clock"></i> My Leave</div>
-                </a>
-                <a href="#" class="nav-item" @click.prevent="activeTab = 'team'; isMobileSidebarOpen = false" :class="{ active: activeTab === 'team' }">
-                    <div class="nav-left"><i class="bi bi-people"></i> My Team</div>
-                </a>
-                <a href="#" class="nav-item" @click.prevent="activeTab = 'approvals'; isMobileSidebarOpen = false" :class="{ active: activeTab === 'approvals' }">
-                    <div class="nav-left"><i class="bi bi-check2-square"></i> Approvals</div>
-                    <span class="badge bg-warning text-dark" v-if="pendingApprovalsCount > 0">{{ pendingApprovalsCount }}</span>
-                </a>
-                <a href="#" class="nav-item" @click.prevent="activeTab = 'calendar'; isMobileSidebarOpen = false" :class="{ active: activeTab === 'calendar' }">
-                    <div class="nav-left"><i class="bi bi-calendar3"></i> Calendar</div>
-                </a>
-                <a href="#" class="nav-item" @click.prevent="activeTab = 'reports'; isMobileSidebarOpen = false" :class="{ active: activeTab === 'reports' }">
-                    <div class="nav-left"><i class="bi bi-bar-chart"></i> Reports</div>
-                </a>
-            </div>
-
-            <div class="user-profile">
-                <div class="avatar" style="background: #10b981; color: white;">RS</div>
-                <div class="user-info">
-                    <b>Rachel Smith</b>
-                    <small>Manager · Admin</small>
+            <div class="header-center d-none d-md-block">
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" v-model="searchQuery" placeholder="Search employees...">
                 </div>
             </div>
-        </aside>
+
+            <div class="header-right">
+                <button class="btn-icon position-relative me-3" @click="toggleNotifications">
+                    <i class="bi bi-bell"></i>
+                    <span class="notif-dot" v-if="unreadNotifications > 0"></span>
+                </button>
+                <div class="user-avatar">RS</div>
+                <button class="btn btn-primary elite-btn ms-3 d-none d-sm-flex" @click="openLeaveModal">
+                    <i class="bi bi-plus-lg me-1"></i> Apply Leave
+                </button>
+                <button class="btn btn-primary elite-btn ms-2 d-flex d-sm-none p-2" @click="openLeaveModal">
+                    <i class="bi bi-plus-lg"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- ================= HORIZONTAL NAVIGATION ================= -->
+        <nav class="main-nav d-none d-md-flex">
+            <a href="#" class="nav-link" :class="{ active: activeTab === 'welcome' }" @click.prevent="activeTab = 'welcome'">Welcome</a>
+            <a href="#" class="nav-link" :class="{ active: activeTab === 'leave' }" @click.prevent="activeTab = 'leave'">My Leave</a>
+            <a href="#" class="nav-link" :class="{ active: activeTab === 'team' }" @click.prevent="activeTab = 'team'">My Team</a>
+            <a href="#" class="nav-link" :class="{ active: activeTab === 'approvals' }" @click.prevent="activeTab = 'approvals'">
+                Approvals <span class="badge bg-warning text-dark ms-1">{{ pendingApprovalsCount }}</span>
+            </a>
+            <a href="#" class="nav-link" :class="{ active: activeTab === 'calendar' }" @click.prevent="activeTab = 'calendar'">Calendar</a>
+            <a href="#" class="nav-link" :class="{ active: activeTab === 'reports' }" @click.prevent="activeTab = 'reports'">Reports</a>
+        </nav>
+
+        <!-- Mobile Navigation Drawer Backdrop -->
+        <div class="mobile-nav-backdrop" :class="{ show: isMobileNavOpen }" @click="isMobileNavOpen = false"></div>
+        <!-- Mobile Navigation Drawer -->
+        <div class="mobile-nav-drawer" :class="{ show: isMobileNavOpen }">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <span class="brand-name">Symplyve</span>
+                <button class="btn-icon" @click="isMobileNavOpen = false"><i class="bi bi-x-lg"></i></button>
+            </div>
+            <div class="search-box mb-4 w-100">
+                <i class="bi bi-search"></i>
+                <input type="text" v-model="searchQuery" placeholder="Search employees...">
+            </div>
+            <a href="#" class="mobile-nav-link" :class="{ active: activeTab === 'welcome' }" @click.prevent="activeTab = 'welcome'; isMobileNavOpen = false">Welcome</a>
+            <a href="#" class="mobile-nav-link" :class="{ active: activeTab === 'leave' }" @click.prevent="activeTab = 'leave'; isMobileNavOpen = false">My Leave</a>
+            <a href="#" class="mobile-nav-link" :class="{ active: activeTab === 'team' }" @click.prevent="activeTab = 'team'; isMobileNavOpen = false">My Team</a>
+            <a href="#" class="mobile-nav-link" :class="{ active: activeTab === 'approvals' }" @click.prevent="activeTab = 'approvals'; isMobileNavOpen = false">Approvals <span class="badge bg-warning text-dark">{{ pendingApprovalsCount }}</span></a>
+            <a href="#" class="mobile-nav-link" :class="{ active: activeTab === 'calendar' }" @click.prevent="activeTab = 'calendar'; isMobileNavOpen = false">Calendar</a>
+            <a href="#" class="mobile-nav-link" :class="{ active: activeTab === 'reports' }" @click.prevent="activeTab = 'reports'; isMobileNavOpen = false">Reports</a>
+        </div>
 
         <!-- ================= MAIN CONTENT ================= -->
-        <main class="main-wrapper">
-            <!-- Topbar -->
-            <header class="topbar">
-                <div class="controls-row w-100 align-items-center">
-                    <!-- Mobile Hamburger -->
-                    <button class="btn btn-light d-md-none me-2" @click="isMobileSidebarOpen = true">
-                        <i class="bi bi-list fs-5"></i>
-                    </button>
-
-                    <!-- NEW: Live Search -->
-                    <div class="search-container d-none d-sm-block">
-                        <i class="bi bi-search search-icon"></i>
-                        <input type="text" class="search-input" v-model="searchQuery" placeholder="Search employees...">
+        <main class="main-content">
+            
+            <!-- ACTION TOOLBAR -->
+            <div class="action-toolbar">
+                <div class="toolbar-left">
+                    <div class="date-nav">
+                        <button class="btn-icon-sm"><i class="bi bi-chevron-left"></i></button>
+                        <span class="current-month">March 2026</span>
+                        <button class="btn-icon-sm"><i class="bi bi-chevron-right"></i></button>
                     </div>
+                    <button class="btn btn-outline-secondary btn-sm ms-3 d-none d-sm-block">Today</button>
+                </div>
 
-                    <div class="date-picker-group d-none d-lg-flex ms-3">
-                        <i class="bi bi-calendar-event"></i>
-                        01 / 03 / 2026 <span class="mx-1 text-muted">→</span> 31 / 03 / 2026
-                    </div>
-                    
-                    <div class="d-flex align-items-center gap-2 gap-md-3 ms-auto">
-                        <button class="btn btn-light bell-btn" @click="loadData" title="Refresh from Sheets" :disabled="isLoading">
-                            <i class="bi bi-arrow-clockwise" :class="{ 'spin-anim': isLoading }"></i>
-                        </button>
-                        
-                        <button class="btn btn-primary elite-btn" @click="openLeaveModal">
-                            <i class="bi bi-plus-lg me-1"></i> <span class="d-none d-sm-inline">Apply Leave</span><span class="d-inline d-sm-none">Leave</span>
-                        </button>
-                        
-                        <button class="btn btn-light position-relative bell-btn" @click="toggleNotifications">
-                            <i class="bi bi-bell"></i>
-                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle" v-if="unreadNotifications > 0">
-                                <span class="visually-hidden">New alerts</span>
-                            </span>
-                        </button>
+                <div class="toolbar-right">
+                    <!-- VIEW SWITCHER -->
+                    <div class="view-switcher">
+                        <button :class="{ active: currentView === 'timeline' }" @click="currentView = 'timeline'" title="Timeline View"><i class="bi bi-layout-three-columns"></i> <span class="d-none d-lg-inline">Timeline</span></button>
+                        <button :class="{ active: currentView === 'grid' }" @click="currentView = 'grid'" title="Calendar Grid"><i class="bi bi-calendar-month"></i> <span class="d-none d-lg-inline">Grid</span></button>
+                        <button :class="{ active: currentView === 'agenda' }" @click="currentView = 'agenda'" title="Agenda List"><i class="bi bi-list-task"></i> <span class="d-none d-lg-inline">Agenda</span></button>
                     </div>
                 </div>
-            </header>
+            </div>
 
-            <!-- NEW: Dashboard Stats Row -->
+            <!-- STATS ROW -->
             <div class="stats-row">
                 <div class="stat-card">
                     <div class="stat-icon primary"><i class="bi bi-people-fill"></i></div>
                     <div class="stat-info">
                         <h4>{{ employees.length }}</h4>
-                        <p>Total Employees</p>
+                        <p>Employees</p>
                     </div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-icon warning"><i class="bi bi-clock-history"></i></div>
                     <div class="stat-info">
                         <h4>{{ pendingApprovalsCount }}</h4>
-                        <p>Pending Requests</p>
+                        <p>Pending</p>
                     </div>
                 </div>
                 <div class="stat-card">
@@ -208,17 +142,17 @@
                 </div>
             </div>
 
-            <!-- Calendar Container -->
-            <div class="timeline-container">
-                
-                <!-- Skeleton Loader -->
-                <div v-if="isLoading" class="skeleton-loader">
-                    <div class="skeleton-header"></div>
-                    <div class="skeleton-row" v-for="i in 8" :key="i"></div>
-                </div>
+            <!-- SKELETON LOADER -->
+            <div v-if="isLoading" class="skeleton-loader">
+                <div class="skeleton-header"></div>
+                <div class="skeleton-row" v-for="i in 6" :key="i"></div>
+            </div>
 
-                <!-- Actual Grid -->
-                <div v-else class="timeline-scroll-area">
+            <!-- ========================================== -->
+            <!-- VIEW 1: TIMELINE (GANTT) -->
+            <!-- ========================================== -->
+            <div v-else-if="currentView === 'timeline'" class="view-container timeline-view">
+                <div class="timeline-scroll-area">
                     <div class="grid-header">
                         <div class="col-emp">EMPLOYEE</div>
                         <div class="col-day" v-for="day in days" :key="day.date" :class="{ weekend: day.isWeekend, today: day.isToday }">
@@ -227,7 +161,6 @@
                     </div>
                     
                     <div id="grid-body">
-                        <!-- Filtered by Search Query -->
                         <div class="grid-row" v-for="emp in filteredEmployees" :key="emp.id">
                             <div class="col-emp d-flex align-items-center">
                                 <div class="emp-avatar">{{ emp.name.substring(0,2).toUpperCase() }}</div>
@@ -237,10 +170,8 @@
                                 </div>
                             </div>
                             
-                            <!-- Grid Background -->
                             <div class="grid-cell" v-for="day in days" :key="'bg-'+day.date" :class="{ weekend: day.isWeekend, today: day.isToday }"></div>
                             
-                            <!-- Leave Bars -->
                             <div v-for="leave in getLeavesForEmp(emp.name)" :key="leave.id" 
                                  class="leave-bar" 
                                  :class="leave.typeClass"
@@ -249,42 +180,85 @@
                                 {{ leave.label }}
                             </div>
                         </div>
-
-                        <!-- Empty Search Result State -->
-                        <div v-if="filteredEmployees.length === 0" class="text-center py-5">
-                            <i class="bi bi-search fs-1 text-muted opacity-50"></i>
-                            <h5 class="mt-3 text-muted">No employees found matching "{{ searchQuery }}"</h5>
+                        
+                        <div v-if="filteredEmployees.length === 0" class="text-center py-5 text-muted">
+                            No employees found.
                         </div>
                     </div>
                 </div>
-                
-                <!-- Legend -->
-                <div class="legend-bar">
-                    <div class="legend-item"><div class="legend-color bg-sick"></div> Sick</div>
-                    <div class="legend-item"><div class="legend-color bg-annual"></div> Annual</div>
-                    <div class="legend-item"><div class="legend-color bg-bereavement"></div> Bereavement</div>
-                    <div class="legend-item"><div class="legend-color bg-maternity"></div> Casual/Maternity</div>
-                    <div class="legend-item"><div class="legend-color bg-unpaid"></div> Unpaid</div>
+            </div>
+
+            <!-- ========================================== -->
+            <!-- VIEW 2: CALENDAR GRID -->
+            <!-- ========================================== -->
+            <div v-else-if="currentView === 'grid'" class="view-container grid-view">
+                <div class="calendar-grid-wrapper">
+                    <div class="calendar-dow">
+                        <div v-for="d in ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']" :key="d">{{ d }}</div>
+                    </div>
+                    <div class="calendar-days">
+                        <!-- Blank spaces for month start offset -->
+                        <div v-for="n in 6" :key="'blank-'+n" class="calendar-cell empty"></div>
+                        
+                        <!-- Days of the month (Mocking March 2026 starting on Sunday) -->
+                        <div v-for="day in days" :key="'grid-'+day.date" class="calendar-cell" :class="{ weekend: day.isWeekend, today: day.isToday }">
+                            <div class="cell-date">{{ day.date }}</div>
+                            <div class="cell-events">
+                                <div v-for="leave in getLeavesForDate(day.date)" :key="leave.id" class="mini-event" :class="leave.typeClass">
+                                    {{ leave.emp.split(' ')[0] }}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <!-- Footer -->
-            <footer class="elite-footer">
-                <div class="footer-content">
-                    <div class="footer-left">
-                        <img src="simplyve-logo2.png" alt="Symplyve" class="brand-logo-small" onerror="this.style.display='none'">
-                        <span>Symplyve &copy; 2026. Built for elite teams.</span>
+            <!-- ========================================== -->
+            <!-- VIEW 3: AGENDA LIST -->
+            <!-- ========================================== -->
+            <div v-else-if="currentView === 'agenda'" class="view-container agenda-view">
+                <div class="agenda-list">
+                    <div v-for="day in daysWithEvents" :key="'agenda-'+day.date" class="agenda-group">
+                        <div class="agenda-date">
+                            <span class="day-num">{{ day.date }}</span>
+                            <span class="day-name">{{ day.dayName }}</span>
+                        </div>
+                        <div class="agenda-items">
+                            <div v-for="leave in getLeavesForDate(day.date)" :key="leave.id" class="agenda-item">
+                                <div class="emp-avatar" style="background: white; border: 1px solid var(--border);">{{ leave.emp.substring(0,2).toUpperCase() }}</div>
+                                <div class="agenda-details">
+                                    <b>{{ leave.emp }}</b>
+                                    <span>{{ leave.label }}</span>
+                                </div>
+                                <span class="badge-leave" :class="leave.typeClass">{{ leave.status }}</span>
+                            </div>
+                        </div>
                     </div>
-                    <div class="footer-right d-none d-md-flex">
-                        <a href="#">Privacy</a>
-                        <a href="#">Terms</a>
-                        <a href="#">Support</a>
+                    <div v-if="daysWithEvents.length === 0" class="text-center py-5 text-muted">
+                        <i class="bi bi-calendar-x fs-1 opacity-50"></i>
+                        <p class="mt-3">No leaves scheduled for this month.</p>
                     </div>
                 </div>
-            </footer>
+            </div>
+
         </main>
 
-        <!-- Notifications Panel -->
+        <!-- ================= FOOTER ================= -->
+        <footer class="elite-footer">
+            <div class="footer-content">
+                <div class="footer-left">
+                    <div class="brand-logo-sm"></div>
+                    <span>Symplyve &copy; 2026. Built for elite teams.</span>
+                </div>
+                <div class="footer-right">
+                    <a href="#">Privacy</a>
+                    <a href="#">Terms</a>
+                    <a href="#">Support</a>
+                </div>
+            </div>
+        </footer>
+
+        <!-- ================= NOTIFICATIONS PANEL ================= -->
         <div class="notification-panel" :class="{ 'show': showNotifications }">
             <div class="notif-header">
                 <h5>Notifications</h5>
@@ -301,12 +275,11 @@
                         <p>{{ notif.text }}</p>
                         <small>{{ notif.time }}</small>
                     </div>
-                    <button class="notif-dismiss" @click="dismissNotification(notif.id)"><i class="bi bi-x"></i></button>
                 </div>
             </div>
         </div>
 
-        <!-- Apply Leave Modal -->
+        <!-- ================= APPLY LEAVE MODAL ================= -->
         <div class="modal fade" id="applyLeaveModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
                 <div class="modal-content elite-modal">
@@ -316,7 +289,6 @@
                     </div>
                     <div class="modal-body p-4">
                         <form @submit.prevent="submitLeave">
-                            
                             <div v-if="validationError" class="alert alert-danger py-2 px-3 mb-3 validation-error" style="background:#fef2f2; border:none;">
                                 <i class="bi bi-exclamation-triangle-fill"></i> {{ validationError }}
                             </div>
@@ -324,9 +296,7 @@
                             <div class="mb-3">
                                 <label class="form-label">Applying as...</label>
                                 <select class="form-select" v-model="selectedEmployee" :disabled="isSubmitting">
-                                    <option v-for="emp in employees" :key="emp.id" :value="emp">
-                                        {{ emp.name }} ({{ emp.id }})
-                                    </option>
+                                    <option v-for="emp in employees" :key="emp.id" :value="emp">{{ emp.name }} ({{ emp.id }})</option>
                                 </select>
                             </div>
 
@@ -337,7 +307,6 @@
                                     <option value="sick">Sick Leave</option>
                                     <option value="casual">Casual Leave</option>
                                     <option value="unpaid">Unpaid Leave</option>
-                                    <option value="bereavement">Bereavement Leave</option>
                                 </select>
                             </div>
                             
@@ -352,13 +321,9 @@
                                 </div>
                             </div>
 
-                            <div v-if="requestedDays > 0" class="mb-3 p-2 rounded" style="background: var(--primary-light); color: var(--primary); font-size: 13px; font-weight: 600; display:flex; align-items:center; gap:8px;">
-                                <i class="bi bi-info-circle"></i> You are requesting {{ requestedDays }} day(s) off.
-                            </div>
-
                             <div class="mb-4">
                                 <label class="form-label">Reason (Optional)</label>
-                                <textarea class="form-control" rows="2" v-model="newLeave.reason" :disabled="isSubmitting" placeholder="e.g. Family vacation"></textarea>
+                                <textarea class="form-control" rows="2" v-model="newLeave.reason" :disabled="isSubmitting"></textarea>
                             </div>
                             
                             <button type="submit" class="btn btn-primary w-100 elite-btn d-flex justify-content-center align-items-center gap-2" :disabled="isSubmitting">
@@ -371,15 +336,11 @@
             </div>
         </div>
 
-        <!-- Toast Container -->
+        <!-- Toasts -->
         <div class="toast-container">
             <div v-for="toast in toasts" :key="toast.id" class="elite-toast" :class="toast.type">
-                <div class="toast-icon">
-                    <i class="bi" :class="toast.type === 'success' ? 'bi-check-lg' : 'bi-x-lg'"></i>
-                </div>
-                <div class="toast-content">
-                    <p>{{ toast.message }}</p>
-                </div>
+                <div class="toast-icon"><i class="bi" :class="toast.type === 'success' ? 'bi-check-lg' : 'bi-x-lg'"></i></div>
+                <div class="toast-content"><p>{{ toast.message }}</p></div>
             </div>
         </div>
 
@@ -390,49 +351,7 @@
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
-    <script src="js/config.js"></script>
-    <script src="js/webgl.js"></script>
-    <script src="js/notifications.js"></script>
-    <script src="js/api.js"></script>
-    <script src="js/calendar.js"></script>
-    <script src="js/leave.js"></script>
-    <script src="js/app.js"></script>
-
-    <!-- Inline script to handle new Dashboard stats without touching app.js -->
-    <script>
-        // This runs AFTER app.js mounts the Vue instance, injecting the new computed properties
-        document.addEventListener('DOMContentLoaded', () => {
-            setTimeout(() => {
-                const appEl = document.getElementById('app');
-                if (appEl && appEl.__vue_app__) {
-                    const vm = appEl.__vue_app__._instance.proxy;
-                    
-                    // Inject Search Query data
-                    if (!vm.searchQuery) {
-                        vm.$.data.searchQuery = '';
-                    }
-
-                    // Inject Computed properties for the new features
-                    vm.$.computed.filteredEmployees = () => {
-                        if (!vm.searchQuery) return vm.employees;
-                        const q = vm.searchQuery.toLowerCase();
-                        return vm.employees.filter(e => e.name.toLowerCase().includes(q) || e.id.toLowerCase().includes(q));
-                    };
-
-                    vm.$.computed.outTodayCount = () => {
-                        const today = 14; // Mock today's date for March
-                        let count = 0;
-                        vm.employees.forEach(emp => {
-                            const empLeaves = vm.leaves.filter(l => l.emp === emp.name && l.status === 'Approved');
-                            if (empLeaves.some(l => today >= l.start && today <= l.end)) {
-                                count++;
-                            }
-                        });
-                        return count;
-                    };
-                }
-            }, 500); // Small delay to ensure Vue is fully mounted
-        });
-    </script>
+    <!-- SINGLE CONSOLIDATED SCRIPT -->
+    <script src="script.js"></script>
 </body>
 </html>
