@@ -31,13 +31,11 @@ const leaveModule = {
             };
 
             try {
-                const payloadStr = btoa(JSON.stringify(payload));
-                const res = await fetch(`${CONFIG.API_URL}?action=addLeave&payload=${payloadStr}`);
-                const data = await res.json();
+                const data = await this.saveLeaveToSheet(payload);
 
                 if (data.success) {
                     bootstrap.Modal.getInstance(document.getElementById('leaveModal')).hide();
-                    await this.loadData(); // Syncs FullCalendar, Gantt, and Panels
+                    await this.loadData(); 
                     this.showToast(`Leave request submitted successfully.`, 'success');
                 } else {
                     this.showToast(data.error || "Failed to save.", 'error');
