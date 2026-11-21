@@ -44,15 +44,7 @@ const calendarModule = {
     methods: {
         async loadData() {
             this.isLoading = true;
-            const failsafe = setTimeout(() => {
-                if (this.isLoading) {
-                    this.isLoading = false;
-                    console.error("Failsafe triggered: Google Sheets took too long.");
-                }
-            }, 8000);
-
             try {
-                console.log("Fetching data from API...");
                 const [empRes, leaveRes] = await Promise.all([
                     fetch(`${CONFIG.API_URL}?action=getEmployees`),
                     fetch(`${CONFIG.API_URL}?action=getLeaves`)
@@ -60,8 +52,6 @@ const calendarModule = {
 
                 const empData = await empRes.json();
                 const leaveData = await leaveRes.json();
-                
-                console.log(`Success: Loaded ${empData.length} employees and ${leaveData.length} leaves.`);
 
                 this.employees = Array.isArray(empData) ? empData.map(e => ({ id: e.ID, name: e.Name, role: e.Role })) : [];
                 
@@ -87,15 +77,36 @@ const calendarModule = {
                     };
                 }).filter(Boolean) : [];
 
+                this.generateDays(); // Generate correct days based on selection
                 this.processSidePanels();
                 this.renderFullCalendar();
                 this.renderChart();
 
             } catch (error) {
-                console.error("Fetch Error Details:", error);
+                console.error("Fetch Error:", error);
             } finally {
-                clearTimeout(failsafe);
                 this.isLoading = false;
+            }
+        },
+        // NEW: Dynamically generate days based on month/year
+        generateDays() {
+            this.days = [];
+            const year = parseInt(this.selectedYear);
+            const month = parseInt(this.selectedMonth);
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+            const today = new Date();
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dateObj = new Date(year, month, i);
+                const dayOfWeek = dateObj.getDay(); 
+                
+                this.days.push({
+                    date: i, 
+                    dayName: dayNames[dayOfWeek],
+                    isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
+                    isToday: i === today.getDate() && month === today.getMonth() && year === today.getFullYear()
+                });
             }
         },
         processSidePanels() {
@@ -131,30 +142,23 @@ const calendarModule = {
                     initialView: 'dayGridMonth',
                     initialDate: `${this.selectedYear}-${String(this.selectedMonth + 1).padStart(2, '0')}-01`,
                     headerToolbar: { left: 'prev,next', center: 'title', right: '' },
-                    height: 'auto',
+                    height: '100%', // Fills the wrapper
                     events: events,
                     dayMaxEvents: 3
                 });
                 this.fcCalendar.render();
             }
         },
-        generateDays() {
-            const dayNames = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-            for (let i = 1; i <= 31; i++) {
-                const dayOfWeek = (i - 1) % 7; 
-                this.days.push({
-                    date: i, dayName: dayNames[dayOfWeek],
-                    isWeekend: dayOfWeek === 0 || dayOfWeek === 6,
-                    isToday: i === new Date().getDate()
-                });
-            }
-        },
         getLeavesForEmp(empName) { return this.leaves.filter(l => l.emp === empName); },
+        // FIXED MATH for Gantt chart
         calculateBarStyle(leave) {
             const total = this.days.length; 
+            const startPct = ((leave.start - 1) / total) * 100;
+            const widthPct = ((leave.end - leave.start + 1) / total) * 100;
+            
             return {
-                left: `calc(220px + (100% - 220px) * ${((leave.start - 1) / total) * 100 / 100})`,
-                width: `calc((100% - 220px) * ${((leave.end - leave.start + 1) / total) * 100 / 100} - 4px)` 
+                left: `calc(220px + (100% - 220px) * ${startPct / 100})`,
+                width: `calc((100% - 220px) * ${widthPct / 100} - 4px)` 
             };
         },
         switchView(view) {
@@ -164,6 +168,7 @@ const calendarModule = {
             }
         },
         updateCalendarDate() {
+            this.generateDays(); // Regenerate days for Gantt chart
             if (this.fcCalendar) {
                 const dateStr = `${this.selectedYear}-${String(this.selectedMonth + 1).padStart(2, '0')}-01`;
                 this.fcCalendar.gotoDate(dateStr);
@@ -198,4 +203,4 @@ const calendarModule = {
             });
         }
     }
-}; 
+};
