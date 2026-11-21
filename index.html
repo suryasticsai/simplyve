@@ -5,14 +5,19 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Symplyve · Elite Leave Management</title>
 
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;600;700&display=swap" rel="stylesheet">
 
+  <!-- Bootstrap 5 -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+  <!-- FullCalendar -->
   <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
   
+  <!-- Custom CSS -->
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -25,12 +30,8 @@
       <span class="brand-name">Symplyve</span>
     </a>
 
-    <div class="search-box d-none d-md-block">
-      <i class="bi bi-search"></i>
-      <input type="text" v-model="searchQuery" placeholder="Search team members, leave types...">
-    </div>
-
-    <div class="header-actions">
+    <!-- Global Search (Moved from header to above calendar, but keeping here for mobile fallback if needed) -->
+    <div class="header-actions ms-auto">
       <button class="btn-icon position-relative" title="Notifications" @click="toggleNotifications">
         <i class="bi bi-bell fs-5"></i>
         <span class="notif-dot" v-if="unreadNotifications > 0"></span>
@@ -42,7 +43,7 @@
         <i class="bi bi-chevron-down" style="font-size:0.75rem;color:var(--muted)"></i>
       </div>
 
-      <button class="btn-apply" @click="openLeaveModal">
+      <button class="btn-apply ms-2" @click="openLeaveModal">
         <i class="bi bi-plus-lg"></i>
         <span class="d-none d-sm-inline">Apply Leave</span>
       </button>
@@ -67,62 +68,68 @@
     </div>
 
     <div v-else>
-      <!-- Stats -->
-      <div class="stats-row">
+      <!-- STATS ROW (Shows on Calendar and Reports) -->
+      <div class="stats-row mb-4">
         <div class="stat-card">
           <div class="stat-icon green"><i class="bi bi-people-fill"></i></div>
-          <div class="stat-info">
-            <h3>{{ employees.length }}</h3>
-            <p>Team Members</p>
-          </div>
+          <div class="stat-info"><h3>{{ employees.length }}</h3><p>Team Members</p></div>
         </div>
         <div class="stat-card">
           <div class="stat-icon amber"><i class="bi bi-clock-history"></i></div>
-          <div class="stat-info">
-            <h3>{{ pendingApprovalsCount }}</h3>
-            <p>Pending Requests</p>
-          </div>
+          <div class="stat-info"><h3>{{ pendingApprovalsCount }}</h3><p>Pending Requests</p></div>
         </div>
         <div class="stat-card">
           <div class="stat-icon red"><i class="bi bi-airplane"></i></div>
-          <div class="stat-info">
-            <h3>{{ outTodayCount }}</h3>
-            <p>Out Today</p>
-          </div>
+          <div class="stat-info"><h3>{{ outTodayCount }}</h3><p>Out Today</p></div>
         </div>
         <div class="stat-card">
           <div class="stat-icon blue"><i class="bi bi-graph-up-arrow"></i></div>
-          <div class="stat-info">
-            <h3>68%</h3>
-            <p>Leave Utilization</p>
-          </div>
+          <div class="stat-info"><h3>68%</h3><p>Leave Utilization</p></div>
         </div>
       </div>
 
-      <div class="content-grid">
+      <!-- ========================================== -->
+      <!-- VIEW: TEAM CALENDAR -->
+      <!-- ========================================== -->
+      <div v-show="activeTab === 'calendar'" class="content-grid">
+        
         <!-- LEFT: Calendar Area -->
         <div class="card">
-          <div class="card-header">
-            <h5><i class="bi bi-calendar3 me-2 text-success"></i>Team Leave Calendar</h5>
+          
+          <!-- NEW TOOLBAR: Search & Date Selector -->
+          <div class="card-header d-flex flex-wrap gap-3 align-items-center justify-content-between">
+            <h5 class="m-0"><i class="bi bi-calendar3 me-2 text-success"></i>Team Calendar</h5>
             
-            <div class="d-flex align-items-center gap-2">
-              <!-- VIEW SWITCHER -->
-              <div class="view-switcher">
-                <button :class="{ active: currentView === 'calendar' }" @click="switchView('calendar')" title="Month View">
-                  <i class="bi bi-calendar-month"></i> Month
-                </button>
-                <button :class="{ active: currentView === 'timeline' }" @click="switchView('timeline')" title="Timeline View">
-                  <i class="bi bi-layout-three-columns"></i> Timeline
-                </button>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+              <!-- Universal Search -->
+              <div class="search-box-sm">
+                <i class="bi bi-search"></i>
+                <input type="text" v-model="searchQuery" placeholder="Search employee...">
               </div>
-              <button class="btn btn-sm btn-outline-secondary rounded-pill px-3 ms-2" @click="goToToday">Today</button>
+
+              <!-- Date Selector -->
+              <div class="date-selector">
+                <select class="form-select form-select-sm" v-model="selectedMonth" @change="updateCalendarDate">
+                  <option v-for="(m, i) in months" :key="i" :value="i">{{ m }}</option>
+                </select>
+                <select class="form-select form-select-sm" v-model="selectedYear" @change="updateCalendarDate">
+                  <option value="2025">2025</option>
+                  <option value="2026">2026</option>
+                </select>
+              </div>
+
+              <!-- View Switcher -->
+              <div class="view-switcher ms-2">
+                <button :class="{ active: currentView === 'calendar' }" @click="switchView('calendar')"><i class="bi bi-calendar-month"></i> Month</button>
+                <button :class="{ active: currentView === 'timeline' }" @click="switchView('timeline')"><i class="bi bi-layout-three-columns"></i> Timeline</button>
+              </div>
             </div>
           </div>
           
-          <!-- FULLCALENDAR VIEW -->
+          <!-- FULLCALENDAR -->
           <div v-show="currentView === 'calendar'" id="calendar" ref="calendarEl"></div>
           
-          <!-- GANTT TIMELINE VIEW -->
+          <!-- GANTT TIMELINE -->
           <div v-show="currentView === 'timeline'" class="timeline-scroll-area">
             <div class="grid-header">
                 <div class="col-emp">EMPLOYEE</div>
@@ -134,17 +141,10 @@
                 <div class="grid-row" v-for="emp in filteredEmployees" :key="emp.id">
                     <div class="col-emp d-flex align-items-center">
                         <div class="emp-avatar">{{ emp.name.substring(0,2).toUpperCase() }}</div>
-                        <div style="overflow: hidden; text-overflow: ellipsis;">
-                            {{ emp.name }}
-                        </div>
+                        <div style="overflow: hidden; text-overflow: ellipsis;">{{ emp.name }}</div>
                     </div>
                     <div class="grid-cell" v-for="day in days" :key="'bg-'+day.date" :class="{ weekend: day.isWeekend, today: day.isToday }"></div>
-                    
-                    <div v-for="leave in getLeavesForEmp(emp.name)" :key="leave.id" 
-                         class="leave-bar" 
-                         :class="leave.typeClass"
-                         :style="calculateBarStyle(leave)"
-                         :title="`${emp.name} - ${leave.label}`">
+                    <div v-for="leave in getLeavesForEmp(emp.name)" :key="leave.id" class="leave-bar" :class="leave.typeClass" :style="calculateBarStyle(leave)">
                         {{ leave.label }}
                     </div>
                 </div>
@@ -160,61 +160,95 @@
           </div>
         </div>
 
-        <!-- RIGHT: Side panels -->
+        <!-- RIGHT: Side Panels -->
         <div class="side-panel">
           <div class="card">
             <div class="card-header"><h5>Leave Balance</h5></div>
             <div class="chart-wrap"><canvas ref="chartEl"></canvas></div>
           </div>
-
           <div class="card">
             <div class="card-header">
               <h5>Who's Out Today</h5>
-              <span class="badge bg-danger-subtle text-danger">{{ outTodayCount }}</span>
+              <span class="badge bg-danger-subtle text-danger">{{ outTodayList.length }}</span>
             </div>
             <div id="outTodayList">
               <div class="team-member" v-for="emp in outTodayList" :key="emp.name">
                 <div class="member-avatar">{{ emp.name.substring(0,2).toUpperCase() }}</div>
-                <div class="member-info">
-                  <strong>{{ emp.name }}</strong>
-                  <small>{{ emp.type }} Leave</small>
-                </div>
-                <span class="status-pill status-out">On Leave</span>
+                <div class="member-info"><strong>{{ emp.name }}</strong><small>{{ emp.type }} Leave</small></div>
+                <span class="status-pill status-out">Out</span>
               </div>
-              <div v-if="outTodayList.length === 0" class="p-4 text-center text-muted small">
-                Everyone is in the office today!
-              </div>
+              <div v-if="outTodayList.length === 0" class="p-4 text-center text-muted small">Everyone is in the office!</div>
             </div>
           </div>
-
           <div class="card">
             <div class="card-header">
               <h5>Pending Approvals</h5>
-              <span class="badge bg-warning-subtle text-warning">{{ pendingApprovalsCount }}</span>
+              <span class="badge bg-warning-subtle text-warning">{{ pendingRequests.length }}</span>
             </div>
             <div id="pendingList">
               <div class="team-member" v-for="p in pendingRequests" :key="p.id">
                 <div class="member-avatar">{{ p.emp.substring(0,2).toUpperCase() }}</div>
-                <div class="member-info">
-                  <strong>{{ p.emp }}</strong>
-                  <small>{{ p.label }}</small>
-                </div>
+                <div class="member-info"><strong>{{ p.emp }}</strong><small>{{ p.label }}</small></div>
                 <div class="d-flex gap-1">
-                  <button class="btn btn-sm btn-success rounded-circle p-1" style="width:28px;height:28px" title="Approve">
-                    <i class="bi bi-check-lg"></i>
-                  </button>
-                  <button class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width:28px;height:28px" title="Reject">
-                    <i class="bi bi-x-lg"></i>
-                  </button>
+                  <button class="btn btn-sm btn-success rounded-circle p-1" style="width:28px;height:28px"><i class="bi bi-check-lg"></i></button>
+                  <button class="btn btn-sm btn-outline-danger rounded-circle p-1" style="width:28px;height:28px"><i class="bi bi-x-lg"></i></button>
                 </div>
               </div>
-              <div v-if="pendingRequests.length === 0" class="p-4 text-center text-muted small">
-                No pending requests.
-              </div>
+              <div v-if="pendingRequests.length === 0" class="p-4 text-center text-muted small">No pending requests.</div>
             </div>
           </div>
         </div>
       </div>
+
+      <!-- ========================================== -->
+      <!-- VIEW: REPORTS (Dynamic Data Table) -->
+      <!-- ========================================== -->
+      <div v-show="activeTab === 'reports'" class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5><i class="bi bi-file-earmark-bar-graph me-2 text-primary"></i>Leave Reports</h5>
+          <div class="search-box-sm">
+            <i class="bi bi-search"></i>
+            <input type="text" v-model="reportSearch" placeholder="Search records...">
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-hover table-borderless align-middle mb-0">
+            <thead class="table-light">
+              <tr>
+                <th>Employee</th>
+                <th>Leave Type</th>
+                <th>Start Date</th>
+                <th>End Date</th>
+                <th>Days</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="leave in filteredReports" :key="leave.id">
+                <td>
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="member-avatar" style="width:30px;height:30px;font-size:0.7rem;">{{ leave.emp.substring(0,2).toUpperCase() }}</div>
+                    <strong>{{ leave.emp }}</strong>
+                  </div>
+                </td>
+                <td><span class="badge" :class="leave.typeClass">{{ leave.label }}</span></td>
+                <td>{{ leave.startDate }}</td>
+                <td>{{ leave.endDate }}</td>
+                <td>{{ leave.end - leave.start + 1 }} Days</td>
+                <td>
+                  <span class="status-pill" :class="leave.status === 'Approved' ? 'status-in' : 'status-out'">
+                    {{ leave.status }}
+                  </span>
+                </td>
+              </tr>
+              <tr v-if="filteredReports.length === 0">
+                <td colspan="6" class="text-center py-5 text-muted">No leave records found.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
   </main>
 
@@ -282,7 +316,8 @@
     </div>
   </div>
 
-  <!-- Notifications Panel -->
+  <!-- Notifications Panel (Fixed positioning & overlay) -->
+  <div class="notification-overlay" v-if="showNotifications" @click="toggleNotifications"></div>
   <div class="notification-panel" :class="{ 'show': showNotifications }">
       <div class="notif-header">
           <h5>Notifications</h5>
@@ -307,7 +342,6 @@
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 
-<!-- Modular Scripts (Removed webgl.js) -->
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
 <script src="js/notifications.js"></script>
