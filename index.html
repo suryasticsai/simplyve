@@ -17,7 +17,7 @@
 </head>
 <body>
 
-<div id="app">
+<div id="app" class="d-flex flex-column min-vh-100">
   <!-- ===== HEADER ===== -->
   <header class="top-header">
     <a href="#" class="brand">
@@ -55,7 +55,7 @@
   </nav>
 
   <!-- ===== MAIN ===== -->
-  <main class="main-content">
+  <main class="main-content flex-grow-1">
     <div v-if="isLoading" class="text-center py-5">
       <div class="spinner-border text-primary" role="status"></div>
       <p class="mt-3 text-muted">Syncing with Google Sheets...</p>
@@ -82,9 +82,7 @@
         </div>
       </div>
 
-      <!-- ========================================== -->
       <!-- VIEW: TEAM CALENDAR -->
-      <!-- ========================================== -->
       <div v-show="activeTab === 'calendar'" class="content-grid">
         <div class="card">
           <!-- TOOLBAR -->
@@ -114,12 +112,11 @@
             </div>
           </div>
           
-          <!-- FULLCALENDAR WRAPPER (Ensures height is always present) -->
-          <div v-show="currentView === 'calendar'" style="min-height: 550px; padding: 1rem;" id="calendar" ref="calendarEl"></div>
+          <!-- FULLCALENDAR WRAPPER -->
+          <div v-show="currentView === 'calendar'" style="min-height: 600px; padding: 1rem;" id="calendar" ref="calendarEl"></div>
           
           <!-- GANTT TIMELINE -->
           <div v-show="currentView === 'timeline'" class="timeline-scroll-area">
-            <!-- DYNAMIC GRID COLUMNS -->
             <div class="grid-header" :style="{ gridTemplateColumns: `220px repeat(${days.length}, minmax(40px, 1fr))` }">
                 <div class="col-emp">EMPLOYEE</div>
                 <div class="col-day" v-for="day in days" :key="day.date" :class="{ weekend: day.isWeekend, today: day.isToday }">
@@ -140,13 +137,13 @@
             </div>
           </div>
 
-          <!-- FIXED LEGEND USING BOOTSTRAP UTILS -->
+          <!-- LEGEND (Forced styles to prevent missing dots) -->
           <div class="legend d-flex flex-wrap gap-3 p-3 bg-light border-top">
-            <div class="d-flex align-items-center gap-2 small fw-semibold text-muted"><div class="legend-dot" style="background:#3b82f6"></div> Annual</div>
-            <div class="d-flex align-items-center gap-2 small fw-semibold text-muted"><div class="legend-dot" style="background:#f59e0b"></div> Sick</div>
-            <div class="d-flex align-items-center gap-2 small fw-semibold text-muted"><div class="legend-dot" style="background:#8b5cf6"></div> Casual</div>
-            <div class="d-flex align-items-center gap-2 small fw-semibold text-muted"><div class="legend-dot" style="background:#06b6d4"></div> WFH</div>
-            <div class="d-flex align-items-center gap-2 small fw-semibold text-muted"><div class="legend-dot" style="background:#64748b"></div> Unpaid</div>
+            <div class="d-flex align-items-center gap-2 small fw-semibold text-muted"><div style="width:10px; height:10px; border-radius:3px; background:#3b82f6;"></div> Annual</div>
+            <div class="d-flex align-items-center gap-2 small fw-semibold text-muted"><div style="width:10px; height:10px; border-radius:3px; background:#f59e0b;"></div> Sick</div>
+            <div class="d-flex align-items-center gap-2 small fw-semibold text-muted"><div style="width:10px; height:10px; border-radius:3px; background:#8b5cf6;"></div> Casual</div>
+            <div class="d-flex align-items-center gap-2 small fw-semibold text-muted"><div style="width:10px; height:10px; border-radius:3px; background:#06b6d4;"></div> WFH</div>
+            <div class="d-flex align-items-center gap-2 small fw-semibold text-muted"><div style="width:10px; height:10px; border-radius:3px; background:#64748b;"></div> Unpaid</div>
           </div>
         </div>
 
@@ -173,16 +170,14 @@
         </div>
       </div>
 
-      <!-- ========================================== -->
-      <!-- VIEW: APPROVALS (NEW) -->
-      <!-- ========================================== -->
+      <!-- VIEW: APPROVALS -->
       <div v-show="activeTab === 'approvals'" class="card">
-        <div class="card-header">
-          <h5><i class="bi bi-check2-square me-2 text-primary"></i>Pending Approvals</h5>
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h5 class="m-0"><i class="bi bi-check2-square me-2 text-primary"></i>Pending Approvals</h5>
           <span class="badge bg-warning text-dark">{{ pendingRequests.length }} Requests</span>
         </div>
         <div class="table-responsive">
-          <table class="table table-hover align-middle mb-0">
+          <table class="table table-hover align-middle mb-0" style="min-width: 800px;">
             <thead class="table-light">
               <tr>
                 <th>Employee</th>
@@ -204,8 +199,8 @@
                 <td class="text-muted small">{{ req.label.match(/\((.*?)\)/)[1] }}</td>
                 <td><span class="status-pill status-out">Pending</span></td>
                 <td class="text-end">
-                  <button class="btn btn-sm btn-primary rounded-pill px-3 me-1">Approve</button>
-                  <button class="btn btn-sm btn-outline-danger rounded-pill px-3">Reject</button>
+                  <button class="btn btn-sm btn-primary rounded-pill px-3 me-1" @click="approveLeave(req.id)">Approve</button>
+                  <button class="btn btn-sm btn-outline-danger rounded-pill px-3" @click="rejectLeave(req.id)">Reject</button>
                 </td>
               </tr>
               <tr v-if="pendingRequests.length === 0">
@@ -219,9 +214,7 @@
         </div>
       </div>
 
-      <!-- ========================================== -->
       <!-- VIEW: REPORTS -->
-      <!-- ========================================== -->
       <div v-show="activeTab === 'reports'" class="card">
         <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
           <h5 class="m-0"><i class="bi bi-file-earmark-bar-graph me-2 text-primary"></i>Leave Reports</h5>
@@ -255,7 +248,7 @@
                 <td>{{ leave.endDate }}</td>
                 <td>{{ leave.end - leave.start + 1 }} Days</td>
                 <td>
-                  <span class="status-pill" :class="leave.status === 'Approved' ? 'status-in' : 'status-out'">
+                  <span class="status-pill" :class="leave.status === 'Approved' ? 'status-in' : (leave.status === 'Pending' ? 'bg-warning text-dark' : 'status-out')">
                     {{ leave.status }}
                   </span>
                 </td>
@@ -267,11 +260,25 @@
           </table>
         </div>
       </div>
-
     </div>
   </main>
 
-  <!-- DEBUG CONSOLE (Keep as is) -->
+  <!-- ===== FOOTER ===== -->
+  <footer class="footer mt-auto py-3 bg-white border-top">
+    <div class="container-fluid px-4 d-flex flex-column flex-md-row justify-content-between align-items-center text-muted small">
+      <div class="d-flex align-items-center gap-2 mb-2 mb-md-0">
+        <i class="bi bi-hexagon-fill text-primary"></i>
+        <span>Symplyve &copy; 2026. Built for elite teams.</span>
+      </div>
+      <div class="d-flex gap-3">
+        <a href="#" class="text-decoration-none text-muted">Privacy</a>
+        <a href="#" class="text-decoration-none text-muted">Terms</a>
+        <a href="#" class="text-decoration-none text-muted">Support</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- DEBUG CONSOLE -->
   <div class="debug-console" :class="{ 'open': showDebug }">
     <div class="debug-header">
       <div class="d-flex align-items-center gap-2">
@@ -293,7 +300,7 @@
     </div>
   </div>
 
-  <!-- APPLY LEAVE MODAL -->
+  <!-- MODALS & TOASTS (Same as before) -->
   <div class="modal fade" id="leaveModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
       <div class="modal-content">
@@ -354,6 +361,23 @@
       </div>
       <div style="font-weight:500;font-size:0.9rem">{{ toast.message }}</div>
     </div>
+  </div>
+
+  <div class="notification-overlay" v-if="showNotifications" @click="toggleNotifications"></div>
+  <div class="notification-panel" :class="{ 'show': showNotifications }">
+      <div class="notif-header">
+          <h5>Notifications</h5>
+          <button @click="toggleNotifications" class="btn-close-custom"><i class="bi bi-x-lg"></i></button>
+      </div>
+      <div class="notif-body">
+          <div class="notif-item" v-for="notif in notifications" :key="notif.id" :class="{ unread: !notif.read }">
+              <div class="notif-icon" :class="notif.type"><i class="bi" :class="notif.icon"></i></div>
+              <div class="notif-content">
+                  <p>{{ notif.text }}</p>
+                  <small>{{ notif.time }}</small>
+              </div>
+          </div>
+      </div>
   </div>
 </div>
 
