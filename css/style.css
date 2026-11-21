@@ -169,7 +169,7 @@ body {
 .footer-right a { color: var(--text-muted); text-decoration: none; margin-left: 16px; font-weight: 500; }
 .footer-right a:hover { color: var(--primary); }
 
-/* ================= NOTIFICATIONS & MODAL (Reused) ================= */
+/* ================= NOTIFICATIONS & MODAL ================= */
 .notification-panel { position: fixed; top: 0; right: -400px; width: 380px; height: 100vh; background: white; box-shadow: -10px 0 30px rgba(0,0,0,0.1); z-index: 1050; transition: right 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); display: flex; flex-direction: column; }
 .notification-panel.show { right: 0; }
 .notif-header { padding: 20px; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
@@ -203,13 +203,18 @@ body {
 .mobile-nav-link { display: flex; justify-content: space-between; padding: 16px 0; font-size: 15px; font-weight: 600; color: var(--text-muted); text-decoration: none; border-bottom: 1px solid var(--border); }
 .mobile-nav-link.active { color: var(--primary); }
 
-/* ================= RESPONSIVE ================= */
+/* ================= SKELETON & RESPONSIVE ================= */
+.skeleton-loader { padding: 24px; display: flex; flex-direction: column; gap: 12px; }
+.skeleton-header { height: 48px; background: #f1f5f9; border-radius: 8px; width: 100%; animation: shimmer 1.5s infinite; }
+.skeleton-row { height: 56px; background: #f8fafc; border-radius: 8px; width: 100%; animation: shimmer 1.5s infinite; border: 1px solid var(--border); }
+@keyframes shimmer { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
 @media (max-width: 768px) {
     .stats-row { grid-template-columns: 1fr; }
     .action-toolbar { flex-direction: column; align-items: stretch; }
     .view-switcher { width: 100%; justify-content: space-between; }
     .calendar-days { grid-auto-rows: minmax(80px, 1fr); }
-    .cell-events { display: none; /* Hide events on mobile grid to save space, user can use Agenda */ }
+    .cell-events { display: none; }
     .calendar-cell { align-items: center; justify-content: center; padding: 4px; }
     .agenda-group { flex-direction: column; gap: 8px; }
     .agenda-date { text-align: left; display: flex; gap: 8px; align-items: baseline; }
