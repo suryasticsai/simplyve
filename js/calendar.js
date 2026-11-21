@@ -198,4 +198,4 @@ const calendarModule = {
             });
         }
     }
-};
+}; 
