@@ -4,17 +4,7 @@ const leaveModule = {
             selectedEmployee: null,
             newLeave: { type: 'annual', startDate: '', endDate: '', reason: '' },
             isSubmitting: false,
-            validationError: '',
             toasts: [] 
-        }
-    },
-    computed: {
-        requestedDays() {
-            if (!this.newLeave.startDate || !this.newLeave.endDate) return 0;
-            const start = new Date(this.newLeave.startDate);
-            const end = new Date(this.newLeave.endDate);
-            if (end < start) return 0;
-            return Math.ceil(Math.abs(end - start) / (1000 * 60 * 60 * 24)) + 1;
         }
     },
     methods: {
@@ -23,17 +13,13 @@ const leaveModule = {
                 this.selectedEmployee = this.employees[0];
             }
             this.newLeave = { type: 'annual', startDate: '', endDate: '', reason: '' };
-            this.validationError = '';
             this.isSubmitting = false;
-            new bootstrap.Modal(document.getElementById('applyLeaveModal')).show();
+            new bootstrap.Modal(document.getElementById('leaveModal')).show();
         },
         async submitLeave() {
-            if (!this.selectedEmployee) return this.validationError = "Please select an employee.";
-            if (!this.newLeave.startDate || !this.newLeave.endDate) return this.validationError = "Please select dates.";
+            if (!this.selectedEmployee) return;
             
             this.isSubmitting = true;
-            this.validationError = '';
-
             const payload = {
                 employeeId: this.selectedEmployee.id,
                 employeeName: this.selectedEmployee.name,
@@ -50,8 +36,8 @@ const leaveModule = {
                 const data = await res.json();
 
                 if (data.success) {
-                    bootstrap.Modal.getInstance(document.getElementById('applyLeaveModal')).hide();
-                    await this.loadData();
+                    bootstrap.Modal.getInstance(document.getElementById('leaveModal')).hide();
+                    await this.loadData(); // Syncs FullCalendar, Gantt, and Panels
                     this.showToast(`Leave request submitted successfully.`, 'success');
                 } else {
                     this.showToast(data.error || "Failed to save.", 'error');
