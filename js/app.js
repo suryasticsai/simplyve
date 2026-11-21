@@ -3,9 +3,7 @@ const { createApp } = Vue;
 const app = createApp({
     data() {
         return {
-            activeTab: 'calendar',     // For the horizontal navigation
-            currentView: 'timeline',   // 'timeline', 'grid', 'agenda'
-            isMobileNavOpen: false,    // Mobile drawer toggle
+            activeTab: 'calendar',
             ...notificationModule.data(),
             ...calendarModule.data(),
             ...leaveModule.data(),
@@ -13,9 +11,8 @@ const app = createApp({
     },
     computed: {
         ...notificationModule.computed,
-        ...calendarModule.computed, // Pulls in filteredEmployees, outTodayCount, etc.
-        ...leaveModule.computed,    // Pulls in requestedDays
-        pendingApprovalsCount() { return 2; }
+        ...calendarModule.computed, // Includes outTodayCount, pendingApprovalsCount, filteredEmployees
+        ...leaveModule.computed
     },
     methods: {
         ...notificationModule.methods,
